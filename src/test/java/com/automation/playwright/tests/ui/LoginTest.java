@@ -10,6 +10,7 @@ import com.automation.playwright.base.UiTest;
 import com.automation.playwright.data.TestData;
 import com.automation.playwright.pages.InventoryPage;
 import com.automation.playwright.pages.LoginPage;
+import com.automation.playwright.utils.Steps;
 
 /**
  * Logging in and out of Sauce Demo, and pages that need a login.
@@ -58,6 +59,22 @@ public class LoginTest extends UiTest {
 
 		assertThat(login.loginButton()).isVisible();
 		assertThat(page()).not().hasURL(Pattern.compile(".*/inventory\\.html"));
+	}
+
+	/**
+	 * Logs out, then presses the browser's Back button. The shop must not show
+	 * the products again: the login cookie is gone, so it shows the login form
+	 * with an error that names the page.
+	 */
+	@Test(description = "Back after logout does not show the products")
+	public void backAfterLogoutDoesNotShowTheProducts() {
+		LoginPage login = loginAs(TestData.STANDARD_USER).logout();
+		assertThat(login.loginButton()).isVisible();
+
+		Steps.log("Press the browser's Back button");
+		page().goBack();
+		assertThat(login.loginButton()).isVisible();
+		assertThat(login.error()).containsText("when you are logged in");
 	}
 
 	/**

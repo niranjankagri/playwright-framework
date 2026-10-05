@@ -16,6 +16,8 @@ public class CheckoutInfoPage extends ShopPage {
 	private final Locator lastName = byTestId("lastName");
 	private final Locator postalCode = byTestId("postalCode");
 	private final Locator continueButton = byTestId("continue");
+	// Cancel goes back to the cart
+	private final Locator cancel = byTestId("cancel");
 	// Red banner, e.g. "Error: First Name is required"
 	private final Locator error = byTestId("error");
 
@@ -63,6 +65,17 @@ public class CheckoutInfoPage extends ShopPage {
 		CheckoutOverviewPage overview = new CheckoutOverviewPage(page);
 		overview.waitUntilLoaded();
 		return overview;
+	}
+
+	/**
+	 * @return CartPage the cart, after clicking Cancel.
+	 */
+	public CartPage cancel() {
+		Steps.log("Cancel the checkout");
+		cancel.click();
+		CartPage cart = new CartPage(page);
+		cart.waitUntilLoaded();
+		return cart;
 	}
 
 	/**

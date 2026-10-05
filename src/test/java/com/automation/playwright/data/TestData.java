@@ -17,6 +17,8 @@ public final class TestData {
 	// Sauce Demo users (all share the password in config.properties)
 	public static final String STANDARD_USER = "standard_user";
 	public static final String LOCKED_OUT_USER = "locked_out_user";
+	// Sees the wrong picture on every product (a deliberately broken user of the demo shop)
+	public static final String PROBLEM_USER = "problem_user";
 	// Products used in cart and checkout tests
 	public static final String BACKPACK = "Sauce Labs Backpack";
 	public static final String BIKE_LIGHT = "Sauce Labs Bike Light";

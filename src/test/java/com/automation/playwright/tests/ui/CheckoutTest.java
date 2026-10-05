@@ -9,6 +9,7 @@ import org.testng.annotations.Test;
 
 import com.automation.playwright.base.UiTest;
 import com.automation.playwright.data.TestData;
+import com.automation.playwright.pages.CartPage;
 import com.automation.playwright.pages.CheckoutCompletePage;
 import com.automation.playwright.pages.CheckoutInfoPage;
 import com.automation.playwright.pages.CheckoutOverviewPage;
@@ -64,5 +65,19 @@ public class CheckoutTest extends UiTest {
 		form.submit(first, last, zip);
 		assertThat(form.error()).hasText(expected);
 		assertThat(form.title()).hasText("Checkout: Your Information");
+	}
+
+	/**
+	 * Cancels the checkout at the buyer form: the shop goes back to the cart
+	 * and the products are still in it.
+	 */
+	@Test(description = "Cancelling the checkout keeps the cart")
+	public void cancellingTheCheckoutKeepsTheCart() {
+		CheckoutInfoPage form = loginAs(TestData.STANDARD_USER).addToCart(TestData.BACKPACK).openCart().checkout();
+
+		CartPage cart = form.cancel();
+		assertThat(cart.title()).hasText("Your Cart");
+		assertThat(cart.items()).hasText(new String[] { TestData.BACKPACK });
+		assertThat(cart.cartBadge()).hasText("1");
 	}
 }

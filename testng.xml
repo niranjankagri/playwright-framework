@@ -8,6 +8,8 @@
 	as in Maven; run ReportDemoTest directly to see it.
 -->
 <suite name="Playwright UI + API Suite" parallel="classes" thread-count="3">
+	<!-- Read by TestNgFeaturesTest.suiteParameterUserGetsAToken (@Parameters); Maven runs use its @Optional default -->
+	<parameter name="apiUser" value="admin" />
 	<test name="Playwright Tests">
 		<groups>
 			<run>

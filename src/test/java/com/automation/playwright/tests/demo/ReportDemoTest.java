@@ -33,11 +33,29 @@ public class ReportDemoTest extends UiTest {
 	}
 
 	/**
+	 * Logs in with the locked-out user through the login helper, which expects
+	 * success. The helper fails at once with the shop's error text (an
+	 * IllegalStateException), not with a timeout.
+	 */
+	@Test(description = "Demo failure: the login helper is used with a locked-out user")
+	public void loginHelperFailsForLockedOutUser() {
+		loginAs(TestData.LOCKED_OUT_USER);
+	}
+
+	/**
 	 * Skips itself because a precondition is missing; the report shows the reason.
 	 */
 	@Test(description = "Demo skip: the check needs a payment sandbox the demo shop does not have")
 	public void skippedWhenPreconditionIsMissing() {
 		openLoginPage();
 		throw new SkipException("Sauce Demo has no payment provider sandbox, so payment errors cannot be tested");
+	}
+
+	/**
+	 * Depends on a test that fails, so TestNG skips it without running it.
+	 */
+	@Test(dependsOnMethods = "cartBadgeCheckFails", description = "Demo skip: depends on a failed test")
+	public void skippedBecauseDependencyFailed() {
+		loginAs(TestData.STANDARD_USER).openCart();
 	}
 }

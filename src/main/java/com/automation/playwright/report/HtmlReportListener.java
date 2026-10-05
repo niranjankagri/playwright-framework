@@ -32,7 +32,9 @@ import com.automation.playwright.config.Config;
  * grouped by class in collapsible sections; every test shows its steps
  * (page actions and API calls), and a failed UI test also shows its
  * screenshot, a video player and its Playwright trace with the command to
- * open it. The report has search, status filters and a light/dark theme.
+ * open it. The report has search, status filters, a light/dark theme and a
+ * short intro animation (counters, ring and bars), which is left out when the
+ * system asks for reduced motion.
  * <p>
  * Videos and traces stay next to the report in {@code target/artifacts}
  * and are linked relatively, so keep the folders together when sharing.
@@ -114,8 +116,9 @@ public class HtmlReportListener implements IReporter {
 				.thenComparing(Map.Entry::getKey));
 		StringBuilder sections = new StringBuilder();
 		int id = 0;
-		for (Map.Entry<String, List<ITestResult>> group : groups) {
-			sections.append(renderGroup(group.getKey(), group.getValue(), id, reportDir));
+		for (int i = 0; i < groups.size(); i++) {
+			Map.Entry<String, List<ITestResult>> group = groups.get(i);
+			sections.append(renderGroup(group.getKey(), group.getValue(), i, id, reportDir));
 			id += group.getValue().size();
 		}
 
@@ -147,11 +150,12 @@ public class HtmlReportListener implements IReporter {
 	 *
 	 * @param name       the class name.
 	 * @param results    its results, in start order.
+	 * @param index      its position on the page, for the staggered fade-in.
 	 * @param firstId    the element id number of its first card.
 	 * @param reportDir  the report's folder.
 	 * @return String    the HTML section.
 	 */
-	private String renderGroup(String name, List<ITestResult> results, int firstId, Path reportDir) {
+	private String renderGroup(String name, List<ITestResult> results, int index, int firstId, Path reportDir) {
 		long passed = count(results, "passed");
 		long failed = count(results, "failed");
 		long skipped = results.size() - passed - failed;
@@ -165,7 +169,7 @@ public class HtmlReportListener implements IReporter {
 		for (int i = 0; i < results.size(); i++) {
 			cards.append(renderTest(results.get(i), firstId + i, reportDir));
 		}
-		return "<section class=\"group " + worst + (open ? " open" : "") + "\" data-default=\"" + open + "\">"
+		return "<section class=\"group " + worst + (open ? " open" : "") + "\" data-default=\"" + open + "\" style=\"--i:" + index + "\">"
 				+ "<button class=\"ghead\" aria-expanded=\"" + open + "\"><span class=\"gname\">" + esc(name)
 				+ "<small>" + results.size() + (results.size() == 1 ? " test" : " tests") + "</small></span>"
 				+ "<span class=\"chips\">" + chips + "</span>"
@@ -419,7 +423,9 @@ public class HtmlReportListener implements IReporter {
 			.seg button[aria-pressed=true]{background:var(--accent);color:#fff}.btn{border:1px solid var(--line);border-radius:10px}
 			/* Class groups and test cards; open and close animate their height */
 			.group{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--pass);border-radius:14px;margin-bottom:12px;box-shadow:var(--shadow);overflow:hidden}
+			.group{animation:rise .45s ease both;animation-delay:calc(var(--i,0)*45ms)}
 			.group.failed{border-left-color:var(--fail)}.group.skipped{border-left-color:var(--skip)}
+			:is(.bar,.gbar) i{transition:width .9s cubic-bezier(.2,.8,.2,1)}
 			.ghead,.head{all:unset;box-sizing:border-box;width:100%;display:grid;align-items:center;cursor:pointer}
 			.ghead{grid-template-columns:minmax(0,1fr) auto 140px 76px auto;gap:16px;padding:14px 18px}
 			.ghead:hover{background:var(--hover)}.ghead:focus-visible,.head:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
@@ -523,6 +529,16 @@ public class HtmlReportListener implements IReporter {
 			var box=document.getElementById('lightbox');
 			document.querySelectorAll('.zoom').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();box.querySelector('img').src=a.querySelector('img').src;box.style.display='grid'})});
 			box.addEventListener('click',function(){box.style.display='none'});
+			// Intro: the numbers count up and the ring and bars fill; the page already has the final values, so it is skipped for reduced motion
+			if(!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)){
+			var ring=document.querySelector('.rate'),nums=[].slice.call(document.querySelectorAll('.stat b,.rate b')),finals=nums.map(function(n){return n.textContent}),
+			bars=[].slice.call(document.querySelectorAll('.bar i,.gbar i')),widths=bars.map(function(b){return b.style.width}),t0=null;
+			bars.forEach(function(b){b.style.width='0'});
+			function frame(t){if(t0===null)t0=t;var k=Math.min((t-t0)/900,1),e=1-Math.pow(1-k,3);
+			nums.forEach(function(n,i){n.textContent=Math.round(parseInt(finals[i],10)*e)+(finals[i].indexOf('%')>=0?'%':'')});
+			ring.style.background='conic-gradient(var(--pass) '+({{rate}}*e)+'%,var(--line) 0)';if(k<1)requestAnimationFrame(frame)}
+			requestAnimationFrame(frame);
+			requestAnimationFrame(function(){requestAnimationFrame(function(){bars.forEach(function(b,i){b.style.width=widths[i]})})})}
 			})();
 			</script>
 			</body>

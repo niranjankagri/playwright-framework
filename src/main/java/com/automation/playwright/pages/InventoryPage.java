@@ -72,6 +72,13 @@ public class InventoryPage extends ShopPage {
 	}
 
 	/**
+	 * @return List the image address (src) of every product card, top to bottom.
+	 */
+	public List<String> imageSources() {
+		return items.locator("img").all().stream().map(image -> image.getAttribute("src")).toList();
+	}
+
+	/**
 	 * @param option         the option value: "az", "za", "lohi" or "hilo".
 	 * @return InventoryPage this page, re-sorted.
 	 */
