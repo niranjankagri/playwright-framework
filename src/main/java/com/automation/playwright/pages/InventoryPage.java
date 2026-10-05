@@ -2,9 +2,13 @@ package com.automation.playwright.pages;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.automation.playwright.utils.Steps;
+import com.automation.playwright.config.Config;
+import com.microsoft.playwright.APIResponse;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
@@ -23,6 +27,8 @@ public class InventoryPage extends ShopPage {
 	private final Locator prices = byTestId("inventory-item-price");
 	// Sort drop-down: a real <select>, so selectOption() works
 	private final Locator sort = byTestId("product-sort-container");
+	// The product pictures, one per card
+	private final Locator images = items.locator("img");
 
 	/**
 	 * @param page the browser tab this page works on.
@@ -75,7 +81,43 @@ public class InventoryPage extends ShopPage {
 	 * @return List the image address (src) of every product card, top to bottom.
 	 */
 	public List<String> imageSources() {
-		return items.locator("img").all().stream().map(image -> image.getAttribute("src")).toList();
+		return images.all().stream().map(image -> image.getAttribute("src")).toList();
+	}
+
+	/**
+	 * Requests every product image with the page's own request client
+	 * (page.request(), which shares the browser's cookies).
+	 *
+	 * @return Map image address → HTTP status, top to bottom.
+	 */
+	public Map<String, Integer> imageStatuses() {
+		Map<String, Integer> statuses = new LinkedHashMap<>();
+		for (String src : imageSources()) {
+			APIResponse response = page.request().get(Config.get().baseUrl() + src);
+			Steps.log(response.status() + " " + src);
+			statuses.put(src, response.status());
+			response.dispose();
+		}
+		return statuses;
+	}
+
+	/**
+	 * @return int the natural width of the first product image; 0 if it never loaded.
+	 */
+	public int firstImageWidth() {
+		return ((Number) images.first().evaluate("img => img.naturalWidth")).intValue();
+	}
+
+	/**
+	 * Opens the product list in a new tab of the same browser context (same cookies).
+	 *
+	 * @return InventoryPage the product list in the new tab.
+	 */
+	public InventoryPage openInNewTab() {
+		Steps.log("Open the product list in a new tab");
+		InventoryPage tab = new InventoryPage(page.context().newPage()).open();
+		tab.waitUntilLoaded();
+		return tab;
 	}
 
 	/**

@@ -77,6 +77,17 @@ public abstract class UiTest extends PlaywrightTest {
 	}
 
 	/**
+	 * Opens the product list without logging in; the shop sends the user back
+	 * to the login page with an error.
+	 *
+	 * @return LoginPage the login page shown instead of the products.
+	 */
+	protected LoginPage openProductListLoggedOut() {
+		new InventoryPage(page()).open();
+		return new LoginPage(page());
+	}
+
+	/**
 	 * Opens the login page and logs in.
 	 *
 	 * @param user           a Sauce Demo user, e.g. "standard_user".

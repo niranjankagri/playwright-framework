@@ -15,6 +15,7 @@ import com.automation.playwright.base.UiTest;
 import com.automation.playwright.config.Config;
 import com.automation.playwright.data.TestData;
 import com.automation.playwright.pages.InventoryPage;
+import com.automation.playwright.pages.JsonPage;
 import com.automation.playwright.utils.Steps;
 import com.microsoft.playwright.Route;
 
@@ -39,9 +40,9 @@ public class NetworkTest extends UiTest {
 		InventoryPage inventory = loginAs(TestData.STANDARD_USER);
 		assertThat(inventory.items()).hasCount(6);
 		// naturalWidth is 0 for an image that never loaded
-		Object width = page().locator(".inventory_item img").first().evaluate("img => img.naturalWidth");
+		int width = inventory.firstImageWidth();
 		Steps.log("Requests blocked: " + blocked.get() + ", first product image width: " + width);
-		assertEquals(((Number) width).intValue(), 0, "The product image should not have loaded");
+		assertEquals(width, 0, "The product image should not have loaded");
 		assertTrue(blocked.get() > 0, "Some image requests should have been blocked");
 	}
 
@@ -99,8 +100,8 @@ public class NetworkTest extends UiTest {
 		page().route("**/booking/1", route -> route.fulfill(new Route.FulfillOptions()
 				.setStatus(200).setContentType("application/json").setBody(mocked)));
 
-		page().navigate(Config.get().apiUrl() + "/booking/1");
-		assertThat(page().locator("body")).containsText("Mocked");
-		assertThat(page().locator("body")).containsText("By Playwright");
+		JsonPage booking = new JsonPage(page()).open(Config.get().apiUrl() + "/booking/1");
+		assertThat(booking.body()).containsText("Mocked");
+		assertThat(booking.body()).containsText("By Playwright");
 	}
 }

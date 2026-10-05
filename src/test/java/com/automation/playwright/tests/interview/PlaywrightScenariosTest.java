@@ -7,29 +7,26 @@ import static org.testng.Assert.assertTrue;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.testng.annotations.Test;
 
 import com.automation.playwright.base.UiTest;
-import com.automation.playwright.config.Config;
+import com.automation.playwright.browser.BrowserManager;
 import com.automation.playwright.data.TestData;
+import com.automation.playwright.pages.BasePage.DialogResult;
 import com.automation.playwright.pages.InventoryPage;
 import com.automation.playwright.pages.LoginPage;
 import com.automation.playwright.utils.Steps;
-import com.microsoft.playwright.APIResponse;
-import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserContext;
 import com.microsoft.playwright.Locator;
-import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Response;
-import com.microsoft.playwright.options.AriaRole;
 
 /**
  * Common Playwright interview tasks, solved on the Sauce Demo shop: locator
  * strategies, keyboard input, tabs, saved logins, JavaScript, screenshots,
  * dialogs, waiting for a response and checking images. Each test is a
- * short, complete answer that can be shown and explained.
+ * short, complete answer that can be shown and explained; the Playwright
+ * calls live in the page objects, the tests only use pages and check.
  */
 @Test(groups = "interview")
 public class PlaywrightScenariosTest extends UiTest {
@@ -41,21 +38,15 @@ public class PlaywrightScenariosTest extends UiTest {
 	 */
 	@Test(description = "Five locator strategies find the same field")
 	public void locatorStrategiesFindTheSameField() {
-		openLoginPage();
+		LoginPage login = openLoginPage();
 
-		Map<String, Locator> strategies = Map.of(
-				"getByTestId", page().getByTestId("username"),
-				"getByPlaceholder", page().getByPlaceholder("Username"),
-				"CSS", page().locator("#user-name"),
-				"XPath", page().locator("//input[@name='user-name']"),
-				"getByRole", page().getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Username")));
-		strategies.forEach((strategy, locator) -> {
-			Steps.log("Find the user name field with " + strategy);
+		for (Map.Entry<String, Locator> strategy : login.usernameByEveryStrategy().entrySet()) {
+			Steps.log("Find the user name field with " + strategy.getKey());
 			// Exactly one match, and it is the same element (its data-test value)
-			assertThat(locator).hasCount(1);
-			assertThat(locator).hasAttribute("data-test", "username");
-		});
-		assertThat(page().getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Login"))).isEnabled();
+			assertThat(strategy.getValue()).hasCount(1);
+			assertThat(strategy.getValue()).hasAttribute("data-test", "username");
+		}
+		assertThat(login.loginButtonByRole()).isEnabled();
 	}
 
 	/**
@@ -74,16 +65,14 @@ public class PlaywrightScenariosTest extends UiTest {
 	 */
 	@Test(description = "A second tab shares the login")
 	public void secondTabSharesTheLogin() {
-		loginAs(TestData.STANDARD_USER);
+		InventoryPage inventory = loginAs(TestData.STANDARD_USER);
 
-		Steps.log("Open a second tab in the same context and go to the product list");
-		Page second = page().context().newPage();
+		InventoryPage secondTab = inventory.openInNewTab();
 		try {
-			second.navigate("/inventory.html");
-			assertThat(second.getByTestId("inventory-item")).hasCount(6);
-			assertEquals(page().context().pages().size(), 2, "Tabs open in the context");
+			assertThat(secondTab.items()).hasCount(6);
+			assertEquals(inventory.openTabs(), 2, "Tabs open in the context");
 		} finally {
-			second.close();
+			secondTab.close();
 		}
 	}
 
@@ -94,17 +83,12 @@ public class PlaywrightScenariosTest extends UiTest {
 	 */
 	@Test(description = "A saved login skips the login form")
 	public void savedLoginSkipsTheLoginForm() {
-		loginAs(TestData.STANDARD_USER);
-		Steps.log("Save the storage state (cookies + local storage)");
-		String state = page().context().storageState();
+		String savedLogin = loginAs(TestData.STANDARD_USER).savedLogin();
 
-		Browser browser = page().context().browser();
-		Steps.log("Start a new context from the saved state and open the product list");
-		try (BrowserContext context = browser.newContext(new Browser.NewContextOptions()
-				.setBaseURL(Config.get().baseUrl()).setStorageState(state))) {
-			Page fresh = context.newPage();
-			fresh.navigate("/inventory.html");
-			assertThat(fresh.getByTestId("inventory-item")).hasCount(6);
+		Steps.log("Start a new context from the saved login and open the product list");
+		try (BrowserContext context = BrowserManager.newContextWith(savedLogin)) {
+			InventoryPage inventory = new InventoryPage(context.newPage()).open();
+			assertThat(inventory.items()).hasCount(6);
 		}
 	}
 
@@ -114,10 +98,10 @@ public class PlaywrightScenariosTest extends UiTest {
 	 */
 	@Test(description = "JavaScript reads the page and its local storage")
 	public void javascriptReadsThePageAndItsStorage() {
-		loginAs(TestData.STANDARD_USER).addToCart(TestData.BACKPACK);
+		InventoryPage inventory = loginAs(TestData.STANDARD_USER).addToCart(TestData.BACKPACK);
 
-		Object readyState = page().evaluate("() => document.readyState");
-		Object cart = page().evaluate("() => localStorage.getItem('cart-contents')");
+		String readyState = inventory.readyState();
+		String cart = inventory.cartInStorage();
 		Steps.log("document.readyState = " + readyState + ", cart-contents = " + cart);
 		assertEquals(readyState, "complete", "document.readyState");
 		// The shop stores the product ids in the cart; the backpack is id 4
@@ -139,21 +123,15 @@ public class PlaywrightScenariosTest extends UiTest {
 
 	/**
 	 * Handles a JavaScript dialog. Playwright dismisses dialogs by itself
-	 * unless a handler is registered; this one reads the text and accepts.
+	 * unless a handler is registered; the page registers one that reads the
+	 * text and accepts.
 	 */
 	@Test(description = "A browser dialog is read and accepted")
 	public void browserDialogIsReadAndAccepted() {
-		openLoginPage();
-		AtomicReference<String> message = new AtomicReference<>();
-		page().onceDialog(dialog -> {
-			message.set(dialog.message());
-			dialog.accept();
-		});
+		DialogResult dialog = openLoginPage().confirmAndAccept("Leave the shop?");
 
-		Steps.log("Open a confirm() dialog from JavaScript");
-		Object answer = page().evaluate("() => confirm('Leave the shop?')");
-		assertEquals(message.get(), "Leave the shop?", "Dialog text");
-		assertEquals(answer, true, "confirm() returns true when accepted");
+		assertEquals(dialog.message(), "Leave the shop?", "Dialog text");
+		assertEquals(dialog.answer(), true, "confirm() returns true when accepted");
 	}
 
 	/**
@@ -162,32 +140,25 @@ public class PlaywrightScenariosTest extends UiTest {
 	 */
 	@Test(description = "The login loads the product images")
 	public void loginLoadsTheProductImages() {
-		LoginPage login = openLoginPage();
+		Response image = openLoginPage().loginAndWaitForFirstImage(TestData.STANDARD_USER);
 
-		Response image = page().waitForResponse(response -> response.url().endsWith(".jpg"),
-				() -> login.loginAs(TestData.STANDARD_USER));
 		Steps.log("First product image: " + image.status() + " " + image.url());
 		assertEquals(image.status(), 200, "Status of " + image.url());
 	}
 
 	/**
 	 * Checks every product image: the standard user's images are all different
-	 * and every address answers 200 (checked with the page's own request
-	 * client, which shares the browser's cookies). The problem user gets the
-	 * same wrong picture on every product.
+	 * and every address answers 200. The problem user gets the same wrong
+	 * picture on every product.
 	 */
 	@Test(description = "Product images are not broken, except for the problem user")
 	public void productImagesAreNotBrokenExceptForTheProblemUser() {
-		List<String> images = loginAs(TestData.STANDARD_USER).imageSources();
-		assertEquals(images.stream().distinct().count(), 6L, "Different images for 6 products: " + images);
-		for (String src : images) {
-			APIResponse response = page().request().get(Config.get().baseUrl() + src);
-			Steps.log(response.status() + " " + src);
-			assertTrue(response.ok(), "Image " + src + " answered " + response.status());
-			response.dispose();
-		}
+		InventoryPage inventory = loginAs(TestData.STANDARD_USER);
+		Map<String, Integer> statuses = inventory.imageStatuses();
+		assertEquals(statuses.size(), 6, "Different images for 6 products: " + statuses.keySet());
+		statuses.forEach((src, status) -> assertEquals(status.intValue(), 200, "Status of " + src));
 
-		List<String> problemImages = new InventoryPage(page()).logout().loginAs(TestData.PROBLEM_USER).imageSources();
+		List<String> problemImages = inventory.logout().loginAs(TestData.PROBLEM_USER).imageSources();
 		Steps.log("Images of the problem user: " + problemImages.stream().distinct().toList());
 		assertEquals(problemImages.stream().distinct().count(), 1L, "The problem user sees one picture everywhere");
 	}

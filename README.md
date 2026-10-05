@@ -39,7 +39,8 @@ playwright-framework
     │   ├── config      Config: config.properties + -D overrides
     │   ├── browser     BrowserManager: Playwright + browser per thread, context per test, trace + video
     │   ├── pages       BasePage, ShopPage (header, cart, menu), LoginPage, InventoryPage, ProductPage,
-    │   │               CartPage, CheckoutInfoPage, CheckoutOverviewPage, CheckoutCompletePage
+    │   │               CartPage, CheckoutInfoPage, CheckoutOverviewPage, CheckoutCompletePage,
+    │   │               JsonPage (a JSON address opened in the browser)
     │   ├── api         ApiClient (Playwright request context), BookingApi, ApiResponse, Json,
     │   │               model: Booking, BookingDates, CreatedBooking (records)
     │   ├── report      HtmlReportListener (custom HTML report)
@@ -59,6 +60,7 @@ playwright-framework
 
 ## How it works
 
+- **Page Object Model.** Every locator and every browser call (navigation, Back/Reload, JavaScript, dialogs, tabs, saved logins, image checks) lives in a page object under `pages`; tests only call page methods and check the results. The only Playwright calls left in tests are the network routes and listeners that `NetworkTest` sets up as its test conditions.
 - **One Playwright per thread, one context per test.** Playwright objects must not be shared between threads, so `BrowserManager` keeps a Playwright and a browser per thread and reuses them. Every UI test gets a fresh `BrowserContext` (own cookies and storage), which is fast and keeps tests isolated, so test classes run in parallel safely.
 - **No waits in the tests.** Playwright waits for elements to be ready before acting, and its `assertThat(...)` checks retry until the page matches. Pages only add a `waitUntilLoaded()` that waits for an element unique to that page, because Sauce Demo changes the URL before it draws the new page (WebKit showed this).
 - **Locators by test id.** Sauce Demo marks elements with `data-test`; `selectors().setTestIdAttribute("data-test")` makes `page.getByTestId("login-button")` use it. Cards are found with `filter(has: ...)`, buttons by role and name.
@@ -88,9 +90,9 @@ Latest results (5 Oct 2026, headless, 3 threads):
 
 | Browser | Tests | Passed | Time |
 |---|---|---|---|
-| Chromium | 54 | 54 | 32.1 s |
-| Firefox | 54 | 54 | 54.3 s |
-| WebKit | 54 | 54 | 44.4 s |
+| Chromium | 54 | 54 | 32.6 s |
+| Firefox | 54 | 54 | 56.6 s |
+| WebKit | 54 | 54 | 42.6 s |
 
 Running all three engines found two real cross-browser differences, both fixed: Firefox reports image downloads it cancels when the page moves on (the network test now ignores browser cancellations), and WebKit showed the old page for a moment after the URL changed (pages now wait for their own unique element).
 

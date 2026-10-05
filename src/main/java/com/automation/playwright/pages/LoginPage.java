@@ -1,9 +1,14 @@
 package com.automation.playwright.pages;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import com.automation.playwright.config.Config;
 import com.automation.playwright.utils.Steps;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
+import com.microsoft.playwright.Response;
+import com.microsoft.playwright.options.AriaRole;
 
 /**
  * The Sauce Demo login page ({@code /}).
@@ -16,6 +21,8 @@ public class LoginPage extends BasePage {
 	private final Locator loginButton = byTestId("login-button");
 	// Red banner above the button, e.g. "Epic sadface: Username is required"
 	private final Locator error = byTestId("error");
+	// The whole login form, for the element screenshot
+	private final Locator form = page.locator("form");
 
 	/**
 	 * @param page the browser tab this page works on.
@@ -95,14 +102,42 @@ public class LoginPage extends BasePage {
 	 */
 	public byte[] formScreenshot() {
 		Steps.log("Take a screenshot of the login form");
-		return page.locator("form").screenshot();
+		return form.screenshot();
 	}
 
 	/**
-	 * @return Locator the user name field, for the locator-strategy examples.
+	 * Logs in and returns the first product image the browser downloads:
+	 * waitForResponse() starts listening before the login, so the response
+	 * cannot be missed.
+	 *
+	 * @param user      the user name.
+	 * @return Response the first .jpg response after logging in.
 	 */
-	public Locator username() {
-		return username;
+	public Response loginAndWaitForFirstImage(String user) {
+		return page.waitForResponse(response -> response.url().endsWith(".jpg"), () -> loginAs(user));
+	}
+
+	/**
+	 * The user name field found in five ways, for comparing locator strategies:
+	 * test id, placeholder, CSS, XPath and role.
+	 *
+	 * @return Map strategy name → locator, in that order.
+	 */
+	public Map<String, Locator> usernameByEveryStrategy() {
+		Map<String, Locator> strategies = new LinkedHashMap<>();
+		strategies.put("getByTestId", username);
+		strategies.put("getByPlaceholder", page.getByPlaceholder("Username"));
+		strategies.put("CSS", page.locator("#user-name"));
+		strategies.put("XPath", page.locator("//input[@name='user-name']"));
+		strategies.put("getByRole", page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Username")));
+		return strategies;
+	}
+
+	/**
+	 * @return Locator the Login button found by its role and name.
+	 */
+	public Locator loginButtonByRole() {
+		return page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Login"));
 	}
 
 	/**

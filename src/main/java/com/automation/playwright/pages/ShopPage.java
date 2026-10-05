@@ -42,6 +42,22 @@ public abstract class ShopPage extends BasePage {
 	}
 
 	/**
+	 * @return String the login as saved by storageState(): cookies and local
+	 *         storage as JSON, for starting another context already logged in.
+	 */
+	public String savedLogin() {
+		Steps.log("Save the login (storage state: cookies + local storage)");
+		return page.context().storageState();
+	}
+
+	/**
+	 * @return String the cart as the shop keeps it in local storage, e.g. "[4]" (product ids).
+	 */
+	public String cartInStorage() {
+		return (String) page.evaluate("() => localStorage.getItem('cart-contents')");
+	}
+
+	/**
 	 * Opens the cart from the header.
 	 *
 	 * @return CartPage the cart.

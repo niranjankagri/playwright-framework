@@ -101,6 +101,22 @@ public final class BrowserManager {
 	}
 
 	/**
+	 * Opens an extra context on this thread's browser from a saved login, e.g.
+	 * to show that it starts logged in. No trace or video; the caller closes it.
+	 *
+	 * @param storageState   the state saved with storageState() (cookies + local storage).
+	 * @return BrowserContext the new context, with the web shop as its base URL.
+	 */
+	public static BrowserContext newContextWith(String storageState) {
+		BrowserContext context = browser().newContext(new Browser.NewContextOptions()
+				.setBaseURL(Config.get().baseUrl())
+				.setViewportSize(WIDTH, HEIGHT)
+				.setStorageState(storageState));
+		context.setDefaultTimeout(Config.get().timeoutMillis());
+		return context;
+	}
+
+	/**
 	 * @return Page the page of the UI test running on this thread.
 	 * @throws IllegalStateException if no UI test is running on this thread.
 	 */

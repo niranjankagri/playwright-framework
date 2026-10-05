@@ -8,7 +8,6 @@ import com.automation.playwright.base.UiTest;
 import com.automation.playwright.data.TestData;
 import com.automation.playwright.pages.CartPage;
 import com.automation.playwright.pages.InventoryPage;
-import com.automation.playwright.utils.Steps;
 
 /**
  * The cart: adding and removing products, and keeping them on reload.
@@ -54,8 +53,7 @@ public class CartTest extends UiTest {
 	public void cartSurvivesAReload() {
 		InventoryPage inventory = loginAs(TestData.STANDARD_USER).addToCart(TestData.BOLT_SHIRT);
 
-		Steps.log("Reload the page");
-		page().reload();
+		inventory.reload();
 		assertThat(inventory.cartBadge()).hasText("1");
 	}
 }

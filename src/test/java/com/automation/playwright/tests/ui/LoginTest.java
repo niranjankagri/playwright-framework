@@ -10,7 +10,6 @@ import com.automation.playwright.base.UiTest;
 import com.automation.playwright.data.TestData;
 import com.automation.playwright.pages.InventoryPage;
 import com.automation.playwright.pages.LoginPage;
-import com.automation.playwright.utils.Steps;
 
 /**
  * Logging in and out of Sauce Demo, and pages that need a login.
@@ -28,7 +27,7 @@ public class LoginTest extends UiTest {
 	public void standardUserSeesProducts() {
 		InventoryPage inventory = loginAs(TestData.STANDARD_USER);
 
-		assertThat(page()).hasURL(Pattern.compile(".*/inventory\\.html"));
+		assertThat(inventory.page()).hasURL(Pattern.compile(".*/inventory\\.html"));
 		assertThat(inventory.title()).hasText("Products");
 		assertThat(inventory.items()).hasCount(6);
 	}
@@ -58,7 +57,7 @@ public class LoginTest extends UiTest {
 		LoginPage login = loginAs(TestData.STANDARD_USER).logout();
 
 		assertThat(login.loginButton()).isVisible();
-		assertThat(page()).not().hasURL(Pattern.compile(".*/inventory\\.html"));
+		assertThat(login.page()).not().hasURL(Pattern.compile(".*/inventory\\.html"));
 	}
 
 	/**
@@ -71,8 +70,7 @@ public class LoginTest extends UiTest {
 		LoginPage login = loginAs(TestData.STANDARD_USER).logout();
 		assertThat(login.loginButton()).isVisible();
 
-		Steps.log("Press the browser's Back button");
-		page().goBack();
+		login.goBack();
 		assertThat(login.loginButton()).isVisible();
 		assertThat(login.error()).containsText("when you are logged in");
 	}
@@ -83,9 +81,8 @@ public class LoginTest extends UiTest {
 	 */
 	@Test(description = "The product list requires a login")
 	public void productListRequiresLogin() {
-		new InventoryPage(page()).open();
+		LoginPage login = openProductListLoggedOut();
 
-		LoginPage login = new LoginPage(page());
 		assertThat(login.error()).hasText("Epic sadface: You can only access '/inventory.html' when you are logged in.");
 	}
 }
