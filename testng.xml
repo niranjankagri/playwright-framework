@@ -1,0 +1,21 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+	Suite for running from the IDE (right-click → Run). Maven does not use this
+	file; it runs every *Test class with the same settings (see pom.xml).
+	The HTML report listener registers itself through META-INF/services,
+	so it is not listed here (it would run twice).
+	The "demo" group (ReportDemoTest: fails and skips on purpose) is left out,
+	as in Maven; run ReportDemoTest directly to see it.
+-->
+<suite name="Playwright UI + API Suite" parallel="classes" thread-count="3">
+	<test name="Playwright Tests">
+		<groups>
+			<run>
+				<exclude name="demo" />
+			</run>
+		</groups>
+		<packages>
+			<package name="com.automation.playwright.tests.*" />
+		</packages>
+	</test>
+</suite>

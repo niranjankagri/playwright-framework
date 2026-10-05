@@ -1,0 +1,117 @@
+<!--
+	Maven build for playwright-framework.
+
+	Install the browsers once:   mvn exec:java -Dexec.args="install"
+	Run all tests:               mvn clean test
+	Run one group:               mvn clean test -Dgroups=api
+	Run in another browser:      mvn clean test -Dbrowser=firefox
+	Watch the browser:           mvn clean test -Dheadless=false -DslowMo=300
+	Include the demo tests:      mvn clean test -Pdemo   (they fail and skip on purpose)
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.automation</groupId>
+	<artifactId>playwright-framework</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<name>playwright-framework</name>
+	<description>UI, API and network test automation with Playwright for Java and TestNG</description>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<!-- Compile for Java 17 (any newer JDK can build it) -->
+		<maven.compiler.release>17</maven.compiler.release>
+		<!-- Test classes run in parallel on this many threads; override with -Dthreads=N -->
+		<threads>3</threads>
+		<!-- Groups left out of a run; "demo" holds the tests that fail and skip on purpose (see the demo profile) -->
+		<excludedGroups>demo</excludedGroups>
+		<!-- Arguments for the Playwright command line (exec:java), e.g. -Dexec.args="install chromium" -->
+		<exec.args>install</exec.args>
+	</properties>
+
+	<dependencies>
+		<!-- Browser and API automation; downloads its browsers on "install" or the first run -->
+		<dependency>
+			<groupId>com.microsoft.playwright</groupId>
+			<artifactId>playwright</artifactId>
+			<version>1.63.0</version>
+		</dependency>
+		<!-- Test runner; also used by the report listener and the step log -->
+		<dependency>
+			<groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+			<version>7.12.0</version>
+		</dependency>
+		<!-- JSON for API requests and responses (Java records map directly) -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.22.3</version>
+		</dependency>
+		<!-- Silences the "no SLF4J provider" warning of libraries that log through SLF4J -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-nop</artifactId>
+			<version>2.0.17</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<!-- Compiles for Java 17 (see maven.compiler.release) and reports deprecated API use -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.16.0</version>
+				<configuration>
+					<showDeprecation>true</showDeprecation>
+					<showWarnings>true</showWarnings>
+				</configuration>
+			</plugin>
+			<!--
+				Runs every *Test class with TestNG. No suite file is used here, so
+				-Dgroups=... and -Dtest=... work as usual; testng.xml is for the IDE.
+			-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.5.6</version>
+				<configuration>
+					<parallel>classes</parallel>
+					<threadCount>${threads}</threadCount>
+					<excludedGroups>${excludedGroups}</excludedGroups>
+					<!-- Without it, a project path with spaces breaks the forked JVM's classpath -->
+					<useSystemClassLoader>false</useSystemClassLoader>
+				</configuration>
+			</plugin>
+			<!-- Runs Playwright's command line: mvn exec:java -Dexec.args="install" (browsers), "show-trace <zip>" (traces) -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>3.6.4</version>
+				<configuration>
+					<mainClass>com.microsoft.playwright.CLI</mainClass>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<profiles>
+		<!--
+			mvn clean test -Pdemo also runs ReportDemoTest, whose tests fail and skip
+			on purpose, so the report shows a failure with its screenshot, video and
+			trace. The build then ends as failed.
+		-->
+		<profile>
+			<id>demo</id>
+			<properties>
+				<!-- No real group is called "none", so nothing is left out -->
+				<excludedGroups>none</excludedGroups>
+			</properties>
+		</profile>
+	</profiles>
+</project>

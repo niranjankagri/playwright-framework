@@ -1,0 +1,47 @@
+# Runs the whole suite on every push and pull request, once per browser engine.
+# The HTML report, plus the screenshots, videos and traces of failed tests,
+# are kept as a downloadable artifact of each run.
+name: Tests
+
+on:
+  push:
+  pull_request:
+  # Allows a manual run from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: ${{ matrix.browser }}
+    runs-on: ubuntu-latest
+    strategy:
+      # One browser failing should not cancel the others
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      # Downloads the browser plus the Linux libraries it needs
+      - name: Install ${{ matrix.browser }}
+        run: mvn -B -q compile exec:java -Dexec.args="install --with-deps ${{ matrix.browser }}"
+
+      - name: Run the tests
+        run: mvn -B test -Dbrowser=${{ matrix.browser }} -Dheadless=true
+
+      # Kept even when tests fail, so failures can be analysed
+      - name: Keep the report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: report-${{ matrix.browser }}
+          path: |
+            target/surefire-reports/playwright-test-report.html
+            target/artifacts/
+          if-no-files-found: ignore

@@ -1,0 +1,3 @@
+# TestNG loads the listeners named here (Java ServiceLoader), so the HTML report
+# works from Maven, testng.xml and the IDE. Do not also list it in testng.xml.
+com.automation.playwright.report.HtmlReportListener
