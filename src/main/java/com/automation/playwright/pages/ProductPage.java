@@ -2,6 +2,7 @@ package com.automation.playwright.pages;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
+import com.automation.playwright.pages.factory.TestId;
 import com.automation.playwright.utils.Steps;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
@@ -12,9 +13,12 @@ import com.microsoft.playwright.Page;
 public class ProductPage extends ShopPage {
 
 	// Name, price and the button back to the list
-	private final Locator name = byTestId("inventory-item-name");
-	private final Locator price = byTestId("inventory-item-price");
-	private final Locator back = byTestId("back-to-products");
+	@TestId("inventory-item-name")
+	private Locator name;
+	@TestId("inventory-item-price")
+	private Locator price;
+	@TestId("back-to-products")
+	private Locator back;
 
 	/**
 	 * @param page the browser tab this page works on.

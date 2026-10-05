@@ -11,7 +11,7 @@ When a UI test fails, its **screenshot, video and Playwright trace** are kept an
 
 ![HTML test report](docs/images/html-report.png)
 
-*Report of a full run with the demo tests (`mvn clean test -Pdemo`): 58 tests, 54 passed, plus 2 failures and 2 skips on purpose. Each test class is one collapsible row; the class with a failure opens by default.*
+*Report of a full run with the demo tests (`mvn clean test -Pdemo`): 61 tests, 57 passed, plus 2 failures and 2 skips on purpose. Each test class is one collapsible row; the class with a failure opens by default.*
 
 ## Tech stack
 
@@ -41,6 +41,7 @@ playwright-framework
     │   ├── pages       BasePage, ShopPage (header, cart, menu), LoginPage, InventoryPage, ProductPage,
     │   │               CartPage, CheckoutInfoPage, CheckoutOverviewPage, CheckoutCompletePage,
     │   │               JsonPage (a JSON address opened in the browser)
+    │   │   └── factory PageFactory + locator annotations: @TestId, @Role, @Placeholder, @Text, @Css, @XPath
     │   ├── api         ApiClient (Playwright request context), BookingApi, ApiResponse, Json,
     │   │               model: Booking, BookingDates, CreatedBooking (records)
     │   ├── report      HtmlReportListener (custom HTML report)
@@ -54,12 +55,24 @@ playwright-framework
     │                   api: AuthApiTest, BookingApiTest
     │                   network: NetworkTest
     │                   interview: PlaywrightScenariosTest, TestNgFeaturesTest
+    │                   framework: PageFactoryTest
     │                   demo: ReportDemoTest (fails and skips on purpose)
     └── test/resources/config.properties
 ```
 
 ## How it works
 
+- **PageFactory, the Playwright way.** Pages declare their locators with annotations, as with Selenium's `@FindBy`:
+
+  ```java
+  @TestId("checkout")
+  private Locator checkout;
+
+  @Role(value = AriaRole.BUTTON, name = "Open Menu")
+  private Locator menuButton;
+  ```
+
+  `BasePage`'s constructor calls `PageFactory.initLocators(this, page)`, which fills every annotated `Locator` field (also the ones inherited from `ShopPage`). Selenium needs its PageFactory for lazy proxies against stale elements; a Playwright `Locator` is lazy already, so here the factory only gives one declarative style. A wrong field (final, not a `Locator`, two annotations) fails when the page is created. Locators that depend on a value, such as the card of a named product, stay methods.
 - **Page Object Model.** Every locator and every browser call (navigation, Back/Reload, JavaScript, dialogs, tabs, saved logins, image checks) lives in a page object under `pages`; tests only call page methods and check the results. The only Playwright calls left in tests are the network routes and listeners that `NetworkTest` sets up as its test conditions.
 - **One Playwright per thread, one context per test.** Playwright objects must not be shared between threads, so `BrowserManager` keeps a Playwright and a browser per thread and reuses them. Every UI test gets a fresh `BrowserContext` (own cookies and storage), which is fast and keeps tests isolated, so test classes run in parallel safely.
 - **No waits in the tests.** Playwright waits for elements to be ready before acting, and its `assertThat(...)` checks retry until the page matches. Pages only add a `waitUntilLoaded()` that waits for an element unique to that page, because Sauce Demo changes the URL before it draws the new page (WebKit showed this).
@@ -82,19 +95,20 @@ playwright-framework
 | `NetworkTest` | `network` | Shop works with images blocked · no failing requests while shopping (`smoke`) · mocked response replaces the server's |
 | `PlaywrightScenariosTest` | `interview` | Five locator strategies find the same field (test id, placeholder, CSS, XPath, role) · keyboard-only login · a second tab shares the login · a saved login (`storageState`) skips the login form · JavaScript reads the page and local storage (`evaluate`) · element screenshot is a PNG · a browser dialog is read and accepted · `waitForResponse` for the product images · product images not broken (checked with `page.request()`), except for `problem_user` |
 | `TestNgFeaturesTest` | `interview` | `SoftAssert` · `expectedExceptions` + message regex · `priority` + `dependsOnMethods` (2 tests) · `invocationCount = 2` · `timeOut` · `retryAnalyzer` (`RetryOnce`) · `@Parameters` + `@Optional` |
+| `PageFactoryTest` | `framework` | Every page gets all its annotated locators (63 in 8 pages) · `@Text` and `@Css` find the real elements · wrong fields (final, two annotations, not a `Locator`) fail when the page is created |
 | `ReportDemoTest` | `demo` | **On purpose**, to show the report (excluded by default): 2 failures (a wrong assertion; the login helper with a locked-out user) and 2 skips (`SkipException`; a failed dependency) |
 
-A normal run has **54 tests** (36 core + 18 interview) and takes about 30–35 s on Chromium (3 threads). A full run with `-Pdemo` has 58: the same 54 passed plus 2 failed and 2 skipped on purpose.
+A normal run has **57 tests** (36 core + 18 interview + 3 framework) and takes about 30 s on Chromium (3 threads). A full run with `-Pdemo` has 61: the same 57 passed plus 2 failed and 2 skipped on purpose.
 
 Latest results (5 Oct 2026, headless, 3 threads):
 
 | Browser | Tests | Passed | Time |
 |---|---|---|---|
-| Chromium | 54 | 54 | 32.6 s |
-| Firefox | 54 | 54 | 56.6 s |
-| WebKit | 54 | 54 | 42.6 s |
+| Chromium | 57 | 57 | 26.4 s |
+| Firefox | 57 | 57 | 45.9 s |
+| WebKit | 57 | 57 | 37.3 s |
 
-Running all three engines found two real cross-browser differences, both fixed: Firefox reports image downloads it cancels when the page moves on (the network test now ignores browser cancellations), and WebKit showed the old page for a moment after the URL changed (pages now wait for their own unique element).
+Running all three engines found two real cross-browser differences, both fixed: Firefox reports image downloads it cancels when the page moves on (the network test now ignores browser cancellations), and WebKit showed the old page for a moment after the URL changed (pages now wait for their own unique element). Later, Firefox sometimes ignored a click on the side-menu button, so Logout never appeared; `ShopPage.logout()` now clicks again if the menu did not open.
 
 ## How to run
 
@@ -104,7 +118,7 @@ Requirements: JDK 17 or newer and Maven. Playwright downloads its own browsers:
 mvn exec:java -Dexec.args="install"          # once: download Chromium, Firefox and WebKit
 mvn clean test                               # all tests, headless Chromium
 mvn clean test -Dbrowser=firefox             # chromium (default), firefox or webkit
-mvn clean test -Dgroups=api                  # one group: smoke, login, inventory, cart, checkout, api, network or interview
+mvn clean test -Dgroups=api                  # one group: smoke, login, inventory, cart, checkout, api, network, interview or framework
 mvn clean test -Dtest=CheckoutTest           # one class
 mvn clean test -Dheadless=false -DslowMo=300 # watch the browser, slowed down
 mvn clean test -Dthreads=1                   # run the classes one after another
@@ -159,7 +173,7 @@ or drop the zip on [trace.playwright.dev](https://trace.playwright.dev).
 
 ## Adding a test
 
-1. Add or extend a page object in `pages` (extend `ShopPage` for pages after login), use `getByTestId` or role-based locators, add a `waitUntilLoaded()` with an element unique to the page, and log each user action with `Steps.log`.
+1. Add or extend a page object in `pages` (extend `ShopPage` for pages after login), declare its locators as annotated fields (`@TestId`, `@Role`, …), add a `waitUntilLoaded()` with an element unique to the page, and log each user action with `Steps.log`.
 2. Write the test in `tests/ui`, extending `UiTest`, and check with Playwright's `assertThat`, which waits by itself.
 3. For an API test, extend `ApiTest`, add the endpoint to `BookingApi` (or a new `*Api` class), and create test data with `givenBooking(...)` so it is cleaned up.
 4. Give the test a `description` and a group.

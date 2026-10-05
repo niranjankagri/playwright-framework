@@ -4,6 +4,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.automation.playwright.config.Config;
+import com.automation.playwright.pages.factory.Css;
+import com.automation.playwright.pages.factory.Placeholder;
+import com.automation.playwright.pages.factory.Role;
+import com.automation.playwright.pages.factory.TestId;
+import com.automation.playwright.pages.factory.XPath;
 import com.automation.playwright.utils.Steps;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
@@ -16,13 +21,29 @@ import com.microsoft.playwright.options.AriaRole;
 public class LoginPage extends BasePage {
 
 	// User name and password inputs, and the Login button
-	private final Locator username = byTestId("username");
-	private final Locator password = byTestId("password");
-	private final Locator loginButton = byTestId("login-button");
+	@TestId("username")
+	private Locator username;
+	@TestId("password")
+	private Locator password;
+	@TestId("login-button")
+	private Locator loginButton;
 	// Red banner above the button, e.g. "Epic sadface: Username is required"
-	private final Locator error = byTestId("error");
+	@TestId("error")
+	private Locator error;
 	// The whole login form, for the element screenshot
-	private final Locator form = page.locator("form");
+	@Css("form")
+	private Locator form;
+	// The same user name field and Login button found in other ways, for the locator-strategy example
+	@Placeholder("Username")
+	private Locator usernameByPlaceholder;
+	@Css("#user-name")
+	private Locator usernameByCss;
+	@XPath("//input[@name='user-name']")
+	private Locator usernameByXPath;
+	@Role(value = AriaRole.TEXTBOX, name = "Username")
+	private Locator usernameByRole;
+	@Role(value = AriaRole.BUTTON, name = "Login", exact = true)
+	private Locator loginButtonByRole;
 
 	/**
 	 * @param page the browser tab this page works on.
@@ -125,11 +146,11 @@ public class LoginPage extends BasePage {
 	 */
 	public Map<String, Locator> usernameByEveryStrategy() {
 		Map<String, Locator> strategies = new LinkedHashMap<>();
-		strategies.put("getByTestId", username);
-		strategies.put("getByPlaceholder", page.getByPlaceholder("Username"));
-		strategies.put("CSS", page.locator("#user-name"));
-		strategies.put("XPath", page.locator("//input[@name='user-name']"));
-		strategies.put("getByRole", page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Username")));
+		strategies.put("@TestId", username);
+		strategies.put("@Placeholder", usernameByPlaceholder);
+		strategies.put("@Css", usernameByCss);
+		strategies.put("@XPath", usernameByXPath);
+		strategies.put("@Role", usernameByRole);
 		return strategies;
 	}
 
@@ -137,7 +158,7 @@ public class LoginPage extends BasePage {
 	 * @return Locator the Login button found by its role and name.
 	 */
 	public Locator loginButtonByRole() {
-		return page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Login"));
+		return loginButtonByRole;
 	}
 
 	/**

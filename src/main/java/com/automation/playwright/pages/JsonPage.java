@@ -1,5 +1,6 @@
 package com.automation.playwright.pages;
 
+import com.automation.playwright.pages.factory.Css;
 import com.automation.playwright.utils.Steps;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
@@ -11,7 +12,8 @@ import com.microsoft.playwright.Page;
 public class JsonPage extends BasePage {
 
 	// The browser shows the raw JSON as the page body
-	private final Locator body = page.locator("body");
+	@Css("body")
+	private Locator body;
 
 	/**
 	 * @param page the browser tab this page works on.

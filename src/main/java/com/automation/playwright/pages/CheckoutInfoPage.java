@@ -2,6 +2,7 @@ package com.automation.playwright.pages;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
+import com.automation.playwright.pages.factory.TestId;
 import com.automation.playwright.utils.Steps;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
@@ -12,14 +13,20 @@ import com.microsoft.playwright.Page;
 public class CheckoutInfoPage extends ShopPage {
 
 	// Form fields and the Continue button
-	private final Locator firstName = byTestId("firstName");
-	private final Locator lastName = byTestId("lastName");
-	private final Locator postalCode = byTestId("postalCode");
-	private final Locator continueButton = byTestId("continue");
+	@TestId("firstName")
+	private Locator firstName;
+	@TestId("lastName")
+	private Locator lastName;
+	@TestId("postalCode")
+	private Locator postalCode;
+	@TestId("continue")
+	private Locator continueButton;
 	// Cancel goes back to the cart
-	private final Locator cancel = byTestId("cancel");
+	@TestId("cancel")
+	private Locator cancel;
 	// Red banner, e.g. "Error: First Name is required"
-	private final Locator error = byTestId("error");
+	@TestId("error")
+	private Locator error;
 
 	/**
 	 * @param page the browser tab this page works on.

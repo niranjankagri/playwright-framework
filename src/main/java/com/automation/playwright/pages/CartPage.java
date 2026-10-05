@@ -4,6 +4,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 
 import java.util.List;
 
+import com.automation.playwright.pages.factory.TestId;
 import com.automation.playwright.utils.Steps;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
@@ -14,8 +15,10 @@ import com.microsoft.playwright.Page;
 public class CartPage extends ShopPage {
 
 	// Names of the products in the cart, and the Checkout button
-	private final Locator names = byTestId("inventory-item-name");
-	private final Locator checkout = byTestId("checkout");
+	@TestId("inventory-item-name")
+	private Locator names;
+	@TestId("checkout")
+	private Locator checkout;
 
 	/**
 	 * @param page the browser tab this page works on.

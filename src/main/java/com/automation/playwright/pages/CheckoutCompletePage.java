@@ -2,6 +2,7 @@ package com.automation.playwright.pages;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
+import com.automation.playwright.pages.factory.TestId;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 
@@ -11,7 +12,8 @@ import com.microsoft.playwright.Page;
 public class CheckoutCompletePage extends ShopPage {
 
 	// "Thank you for your order!"
-	private final Locator header = byTestId("complete-header");
+	@TestId("complete-header")
+	private Locator header;
 
 	/**
 	 * @param page the browser tab this page works on.

@@ -3,6 +3,7 @@ package com.automation.playwright.pages;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.automation.playwright.pages.factory.PageFactory;
 import com.automation.playwright.utils.Steps;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
@@ -12,6 +13,10 @@ import com.microsoft.playwright.Page;
  * (actionability checks) and its assertions retry until they pass, so pages
  * need no explicit waits; this class only holds what every page shares:
  * browser navigation, JavaScript and dialogs.
+ * <p>
+ * Pages declare their locators with annotations, as with Selenium's
+ * PageFactory, e.g. {@code @TestId("checkout") private Locator checkout;};
+ * the constructor fills them through {@link PageFactory}.
  */
 public abstract class BasePage {
 
@@ -32,6 +37,8 @@ public abstract class BasePage {
 	 */
 	protected BasePage(Page page) {
 		this.page = page;
+		// Fills every @TestId / @Role / @Css ... Locator field of the concrete page
+		PageFactory.initLocators(this, page);
 	}
 
 	/**

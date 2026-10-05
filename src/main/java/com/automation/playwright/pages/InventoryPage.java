@@ -6,8 +6,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.automation.playwright.utils.Steps;
 import com.automation.playwright.config.Config;
+import com.automation.playwright.pages.factory.TestId;
+import com.automation.playwright.utils.Steps;
 import com.microsoft.playwright.APIResponse;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
@@ -22,11 +23,15 @@ public class InventoryPage extends ShopPage {
 	static final String PATH = "/inventory.html";
 
 	// One card per product, and the name and price inside the cards
-	private final Locator items = byTestId("inventory-item");
-	private final Locator names = byTestId("inventory-item-name");
-	private final Locator prices = byTestId("inventory-item-price");
+	@TestId("inventory-item")
+	private Locator items;
+	@TestId("inventory-item-name")
+	private Locator names;
+	@TestId("inventory-item-price")
+	private Locator prices;
 	// Sort drop-down: a real <select>, so selectOption() works
-	private final Locator sort = byTestId("product-sort-container");
+	@TestId("product-sort-container")
+	private Locator sort;
 	// The product pictures, one per card
 	private final Locator images = items.locator("img");
 

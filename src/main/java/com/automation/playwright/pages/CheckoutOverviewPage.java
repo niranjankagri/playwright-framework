@@ -4,6 +4,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 
 import java.util.List;
 
+import com.automation.playwright.pages.factory.TestId;
 import com.automation.playwright.utils.Steps;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
@@ -14,12 +15,18 @@ import com.microsoft.playwright.Page;
 public class CheckoutOverviewPage extends ShopPage {
 
 	// Ordered products, their prices, and the three totals
-	private final Locator names = byTestId("inventory-item-name");
-	private final Locator prices = byTestId("inventory-item-price");
-	private final Locator itemTotal = byTestId("subtotal-label");
-	private final Locator tax = byTestId("tax-label");
-	private final Locator total = byTestId("total-label");
-	private final Locator finish = byTestId("finish");
+	@TestId("inventory-item-name")
+	private Locator names;
+	@TestId("inventory-item-price")
+	private Locator prices;
+	@TestId("subtotal-label")
+	private Locator itemTotal;
+	@TestId("tax-label")
+	private Locator tax;
+	@TestId("total-label")
+	private Locator total;
+	@TestId("finish")
+	private Locator finish;
 
 	/**
 	 * @param page the browser tab this page works on.

@@ -1,9 +1,13 @@
 package com.automation.playwright.pages;
 
+import com.automation.playwright.pages.factory.Role;
+import com.automation.playwright.pages.factory.TestId;
 import com.automation.playwright.utils.Steps;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
+import com.microsoft.playwright.TimeoutError;
 import com.microsoft.playwright.options.AriaRole;
+import com.microsoft.playwright.options.WaitForSelectorState;
 
 /**
  * Parent of every page shown after login. Holds the header they share: the
@@ -11,14 +15,23 @@ import com.microsoft.playwright.options.AriaRole;
  */
 public abstract class ShopPage extends BasePage {
 
+	// Clicks on the burger button before giving up, and how long each waits for the menu
+	private static final int MENU_ATTEMPTS = 3;
+	private static final double MENU_WAIT_MILLIS = 3000;
+
 	// Page title under the header, e.g. "Products", "Your Cart"
-	private final Locator title = byTestId("title");
+	@TestId("title")
+	private Locator title;
 	// Cart icon and the red count on it (absent when the cart is empty)
-	private final Locator cartLink = byTestId("shopping-cart-link");
-	private final Locator cartBadge = byTestId("shopping-cart-badge");
+	@TestId("shopping-cart-link")
+	private Locator cartLink;
+	@TestId("shopping-cart-badge")
+	private Locator cartBadge;
 	// Burger button that opens the side menu, and its Logout entry
-	private final Locator menuButton = page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Open Menu"));
-	private final Locator logoutLink = byTestId("logout-sidebar-link");
+	@Role(value = AriaRole.BUTTON, name = "Open Menu")
+	private Locator menuButton;
+	@TestId("logout-sidebar-link")
+	private Locator logoutLink;
 
 	/**
 	 * @param page the browser tab this page works on.
@@ -77,8 +90,26 @@ public abstract class ShopPage extends BasePage {
 	 */
 	public LoginPage logout() {
 		Steps.log("Log out from the side menu");
-		menuButton.click();
+		openMenu();
 		logoutLink.click();
 		return new LoginPage(page);
+	}
+
+	/**
+	 * Opens the side menu. In Firefox a click on the burger button sometimes
+	 * does not open the menu (the page is still busy), and the Logout link
+	 * then never becomes visible; so the click is repeated until the menu shows.
+	 */
+	private void openMenu() {
+		for (int attempt = 1; attempt <= MENU_ATTEMPTS; attempt++) {
+			menuButton.click();
+			try {
+				logoutLink.waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.VISIBLE).setTimeout(MENU_WAIT_MILLIS));
+				return;
+			} catch (TimeoutError e) {
+				Steps.log("The side menu did not open, clicking again (" + attempt + " of " + MENU_ATTEMPTS + ")");
+			}
+		}
+		throw new IllegalStateException("The side menu did not open after " + MENU_ATTEMPTS + " clicks");
 	}
 }
