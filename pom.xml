@@ -79,7 +79,9 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.6.0</version>
+				<!-- Stay on 3.5.6: 3.6.0 auto-detects the JUnit Platform provider in this project and then
+				     ignores the TestNG suite file and its listeners (the HTML report is not written) -->
+				<version>3.5.6</version>
 				<configuration>
 					<parallel>classes</parallel>
 					<threadCount>${threads}</threadCount>
