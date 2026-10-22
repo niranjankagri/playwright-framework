@@ -169,7 +169,9 @@ or drop the zip on [trace.playwright.dev](https://trace.playwright.dev).
 
 ## CI
 
-`.github/workflows/tests.yml` runs on every push and pull request: one job each for Chromium, Firefox and WebKit. Each job installs its browser with the Linux libraries it needs, runs the tests headless, and keeps the HTML report plus any failure screenshots, videos and traces as a downloadable artifact.
+`.github/workflows/tests.yml` runs on every push and pull request: one job each for Chromium, Firefox and WebKit. Each job installs its browser with the Linux libraries it needs, runs the tests headless, and keeps the HTML report plus any failure screenshots, videos and traces as a downloadable artifact. The JUnit XML is kept as a separate artifact per browser (`junit-<browser>`), which [Automation Coverage & Quality Intelligence](https://github.com/niranjankagri/automation-coverage-quality-intelligence) collects.
+
+`main` is protected by a ruleset: every change goes through a pull request, and the CI jobs above must pass before it is merged.
 
 ## Adding a test
 
@@ -177,3 +179,7 @@ or drop the zip on [trace.playwright.dev](https://trace.playwright.dev).
 2. Write the test in `tests/ui`, extending `UiTest`, and check with Playwright's `assertThat`, which waits by itself.
 3. For an API test, extend `ApiTest`, add the endpoint to `BookingApi` (or a new `*Api` class), and create test data with `givenBooking(...)` so it is cleaned up.
 4. Give the test a `description` and a group.
+
+## License
+
+[MIT](LICENSE)
