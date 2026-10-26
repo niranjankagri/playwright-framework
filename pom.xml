@@ -38,7 +38,7 @@
 		<dependency>
 			<groupId>com.microsoft.playwright</groupId>
 			<artifactId>playwright</artifactId>
-			<version>1.63.0</version>
+			<version>1.64.0</version>
 		</dependency>
 		<!-- Test runner; also used by the report listener and the step log -->
 		<dependency>
@@ -50,13 +50,13 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>2.22.3</version>
+			<version>2.22.4</version>
 		</dependency>
 		<!-- Silences the "no SLF4J provider" warning of libraries that log through SLF4J -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-nop</artifactId>
-			<version>2.0.17</version>
+			<version>2.0.20</version>
 		</dependency>
 	</dependencies>
 
@@ -81,7 +81,7 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<!-- Stay on 3.5.6: 3.6.0 auto-detects the JUnit Platform provider in this project and then
 				     ignores the TestNG suite file and its listeners (the HTML report is not written) -->
-				<version>3.5.6</version>
+				<version>3.6.1</version>
 				<configuration>
 					<parallel>classes</parallel>
 					<threadCount>${threads}</threadCount>
