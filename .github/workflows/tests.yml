@@ -50,6 +50,13 @@ jobs:
             target/artifacts/
           if-no-files-found: ignore
 
+      - name: Check collection report identities
+        run: python3 -m unittest discover -s tools -p 'test_*.py'
+
+      - name: Prepare uniquely identified collection reports
+        if: ${{ !cancelled() }}
+        run: python3 tools/name_repeated_checks.py
+
       # JUnit XML only, as its own artifact: the CI results collection of
       # automation-coverage-quality-intelligence imports it (config/producers.toml there)
       - name: Keep the JUnit results
@@ -57,6 +64,6 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: junit-${{ matrix.browser }}
-          path: target/surefire-reports/TEST-*.xml
+          path: target/collection-junit/TEST-*.xml
           if-no-files-found: warn
           retention-days: 30

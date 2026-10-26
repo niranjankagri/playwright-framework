@@ -185,3 +185,7 @@ CI also runs every Wednesday at 22:30 UTC without a code change, so a broken dep
 ## License
 
 [MIT](LICENSE)
+
+### Repeated TestNG checks in collected reports
+
+`invocationCount=2` intentionally runs `healthCheckAnswersEveryTime` twice. Surefire uses the same JUnit class/name identity for both. CI publishes a separate `target/collection-junit` copy with stable `[invocation 1 of 2]` and `[invocation 2 of 2]` names; outcomes, failures, durations and totals are unchanged, and original Surefire reports remain untouched. Unexpected duplicates or invocation counts fail preparation. Historical artifacts retain their original identities and may remain marked incomplete in Quality Intelligence.
