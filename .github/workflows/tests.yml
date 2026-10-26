@@ -60,13 +60,14 @@ jobs:
         run: python3 -m unittest discover -s tools -p 'test_*.py'
 
       - name: Prepare uniquely identified collection reports
+        id: collection-report
         if: ${{ !cancelled() }}
         run: python3 tools/name_repeated_checks.py
 
       # JUnit XML only, as its own artifact: the CI results collection of
       # automation-coverage-quality-intelligence imports it (config/producers.toml there)
       - name: Keep the JUnit results
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.collection-report.outcome == 'success' }}
         uses: actions/upload-artifact@v7
         with:
           name: junit-${{ matrix.browser }}
