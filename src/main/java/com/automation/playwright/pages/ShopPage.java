@@ -84,23 +84,38 @@ public abstract class ShopPage extends BasePage {
 	}
 
 	/**
-	 * Logs out through the side menu.
+	 * Logs out through the side menu. The Logout link counts as visible while
+	 * the menu is still sliding in, and in Firefox the menu can close again
+	 * before the click lands (CI run 40272507304: "element is not stable",
+	 * then "element is not visible" until the 10 s timeout). So each click
+	 * gets a short timeout, and the menu is opened again if it closed.
 	 *
 	 * @return LoginPage the login page shown after logging out.
 	 */
 	public LoginPage logout() {
 		Steps.log("Log out from the side menu");
-		openMenu();
-		logoutLink.click();
-		return new LoginPage(page);
+		for (int attempt = 1; attempt <= MENU_ATTEMPTS; attempt++) {
+			openMenu();
+			try {
+				logoutLink.click(new Locator.ClickOptions().setTimeout(MENU_WAIT_MILLIS));
+				return new LoginPage(page);
+			} catch (TimeoutError e) {
+				Steps.log("The side menu closed before Logout was clicked, opening it again (" + attempt + " of " + MENU_ATTEMPTS + ")");
+			}
+		}
+		throw new IllegalStateException("Logout could not be clicked after " + MENU_ATTEMPTS + " attempts");
 	}
 
 	/**
-	 * Opens the side menu. In Firefox a click on the burger button sometimes
-	 * does not open the menu (the page is still busy), and the Logout link
-	 * then never becomes visible; so the click is repeated until the menu shows.
+	 * Opens the side menu unless it is already open (another click on the
+	 * burger button would close it). In Firefox a click on the burger button
+	 * sometimes does not open the menu (the page is still busy), and the Logout
+	 * link then never becomes visible; so the click is repeated until the menu shows.
 	 */
 	private void openMenu() {
+		if (logoutLink.isVisible()) {
+			return;
+		}
 		for (int attempt = 1; attempt <= MENU_ATTEMPTS; attempt++) {
 			menuButton.click();
 			try {
