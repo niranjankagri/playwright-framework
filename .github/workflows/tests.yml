@@ -17,6 +17,7 @@ jobs:
   test:
     name: ${{ matrix.browser }}
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     strategy:
       # One browser failing should not cancel the others
       fail-fast: false
@@ -34,7 +35,12 @@ jobs:
 
       # Downloads the browser plus the Linux libraries it needs
       - name: Install ${{ matrix.browser }}
-        run: mvn -B -q compile exec:java -Dexec.args="install --with-deps ${{ matrix.browser }}"
+        timeout-minutes: 10
+        run: |
+          if [ -f /etc/apt/apt-mirrors.txt ]; then
+            sudo sed -i 's|http://azure.archive.ubuntu.com/ubuntu|https://archive.ubuntu.com/ubuntu|g' /etc/apt/apt-mirrors.txt
+          fi
+          mvn -B -q compile exec:java -Dexec.args="install --with-deps ${{ matrix.browser }}"
 
       - name: Run the tests
         run: mvn -B test -Dbrowser=${{ matrix.browser }} -Dheadless=true
