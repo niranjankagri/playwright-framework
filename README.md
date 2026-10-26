@@ -171,6 +171,8 @@ or drop the zip on [trace.playwright.dev](https://trace.playwright.dev).
 
 `.github/workflows/tests.yml` runs on every push and pull request: one job each for Chromium, Firefox and WebKit. Each job installs its browser with the Linux libraries it needs, runs the tests headless, and keeps the HTML report plus any failure screenshots, videos and traces as a downloadable artifact. The JUnit XML is kept as a separate artifact per browser (`junit-<browser>`), which [Automation Coverage & Quality Intelligence](https://github.com/niranjankagri/automation-coverage-quality-intelligence) collects.
 
+CI also runs every Wednesday at 22:30 UTC without a code change, so a broken dependency or a change outside the repository shows up within a week. Dependabot proposes dependency and GitHub Actions updates once a month (minor and patch updates grouped, major versions as separate pull requests).
+
 `main` is protected by a ruleset: every change goes through a pull request, and the CI jobs above must pass before it is merged.
 
 ## Adding a test
