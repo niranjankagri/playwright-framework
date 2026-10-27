@@ -18,7 +18,7 @@ When a UI test fails, its **screenshot, video and Playwright trace** are kept an
 | | |
 |---|---|
 | Language | Java 17 |
-| Browser and API automation | Playwright for Java 1.63 (Chromium, Firefox, WebKit; `APIRequestContext` for HTTP) |
+| Browser and API automation | Playwright for Java 1.64 (Chromium, Firefox, WebKit; `APIRequestContext` for HTTP) |
 | Test runner | TestNG 7.12 (groups, data providers, parallel classes) |
 | JSON | Jackson 2.22 (Java records map to and from JSON) |
 | Build | Maven (Surefire 3.5, exec plugin for the Playwright CLI) |
