@@ -30,8 +30,8 @@ public class InventoryTest extends UiTest {
 	 * @param label   the option's meaning, shown in the report.
 	 * @param option  the option value of the select element.
 	 */
-	@Test(dataProvider = "sortOptions", dataProviderClass = TestData.class, description = "Products are sorted")
-	public void productsAreSorted(String label, String option) {
+	@Test(dataProvider = "sortOptions", dataProviderClass = TestData.class, description = "[TC-106] Products are sorted")
+	public void tc106_productsAreSorted(String label, String option) {
 		InventoryPage inventory = loginAs(TestData.STANDARD_USER).sortBy(option);
 
 		if (option.equals("az") || option.equals("za")) {
@@ -52,8 +52,8 @@ public class InventoryTest extends UiTest {
 	/**
 	 * Every product has a name and a positive price.
 	 */
-	@Test(description = "Every product has a name and a price")
-	public void everyProductHasANameAndAPrice() {
+	@Test(description = "[TC-107] Every product has a name and a price")
+	public void tc107_everyProductHasANameAndAPrice() {
 		InventoryPage inventory = loginAs(TestData.STANDARD_USER);
 
 		List<String> names = inventory.productNames();
@@ -67,8 +67,8 @@ public class InventoryTest extends UiTest {
 	 * Opens a product from the list: the detail page must show the same name
 	 * and price, and "Back to products" must return to the list.
 	 */
-	@Test(groups = "smoke", description = "Product details match the list")
-	public void productDetailsMatchTheList() {
+	@Test(groups = "smoke", description = "[TC-108] Product details match the list")
+	public void tc108_productDetailsMatchTheList() {
 		InventoryPage inventory = loginAs(TestData.STANDARD_USER);
 		double listPrice = inventory.priceOf(TestData.BACKPACK);
 

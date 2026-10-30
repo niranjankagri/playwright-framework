@@ -52,8 +52,8 @@ public class PlaywrightScenariosTest extends UiTest {
 	/**
 	 * Logs in with the keyboard only (focus, type, Tab, Enter).
 	 */
-	@Test(description = "Login works with the keyboard only")
-	public void loginWorksWithTheKeyboardOnly() {
+	@Test(description = "[TC-118] Login works with the keyboard only")
+	public void tc118_loginWorksWithTheKeyboardOnly() {
 		InventoryPage inventory = openLoginPage().loginWithKeyboard(TestData.STANDARD_USER);
 
 		assertThat(inventory.items()).hasCount(6);
@@ -63,8 +63,8 @@ public class PlaywrightScenariosTest extends UiTest {
 	 * Opens a second tab in the same browser context: tabs of one context share
 	 * cookies, so the second tab is logged in without logging in again.
 	 */
-	@Test(description = "A second tab shares the login")
-	public void secondTabSharesTheLogin() {
+	@Test(description = "[TC-119] A second tab shares the login")
+	public void tc119_secondTabSharesTheLogin() {
 		InventoryPage inventory = loginAs(TestData.STANDARD_USER);
 
 		InventoryPage secondTab = inventory.openInNewTab();
@@ -81,8 +81,8 @@ public class PlaywrightScenariosTest extends UiTest {
 	 * starts a new, separate context from it: that context is logged in at
 	 * once. Suites use this to log in once and skip the login form after.
 	 */
-	@Test(description = "A saved login skips the login form")
-	public void savedLoginSkipsTheLoginForm() {
+	@Test(description = "[TC-120] A saved login skips the login form")
+	public void tc120_savedLoginSkipsTheLoginForm() {
 		String savedLogin = loginAs(TestData.STANDARD_USER).savedLogin();
 
 		Steps.log("Start a new context from the saved login and open the product list");
@@ -96,8 +96,8 @@ public class PlaywrightScenariosTest extends UiTest {
 	 * Runs JavaScript in the page with evaluate(): reads the document state
 	 * and the cart the shop keeps in local storage.
 	 */
-	@Test(description = "JavaScript reads the page and its local storage")
-	public void javascriptReadsThePageAndItsStorage() {
+	@Test(description = "[TC-121] JavaScript reads the page and its local storage")
+	public void tc121_javascriptReadsThePageAndItsStorage() {
 		InventoryPage inventory = loginAs(TestData.STANDARD_USER).addToCart(TestData.BACKPACK);
 
 		String readyState = inventory.readyState();
@@ -138,8 +138,8 @@ public class PlaywrightScenariosTest extends UiTest {
 	 * Waits for a network response caused by an action: waitForResponse()
 	 * starts listening, runs the action, and returns the first matching response.
 	 */
-	@Test(description = "The login loads the product images")
-	public void loginLoadsTheProductImages() {
+	@Test(description = "[TC-122] The login loads the product images")
+	public void tc122_loginLoadsTheProductImages() {
 		Response image = openLoginPage().loginAndWaitForFirstImage(TestData.STANDARD_USER);
 
 		Steps.log("First product image: " + image.status() + " " + image.url());
@@ -151,8 +151,8 @@ public class PlaywrightScenariosTest extends UiTest {
 	 * and every address answers 200. The problem user gets the same wrong
 	 * picture on every product.
 	 */
-	@Test(description = "Product images are not broken, except for the problem user")
-	public void productImagesAreNotBrokenExceptForTheProblemUser() {
+	@Test(description = "[TC-123] Product images are not broken, except for the problem user")
+	public void tc123_productImagesAreNotBrokenExceptForTheProblemUser() {
 		InventoryPage inventory = loginAs(TestData.STANDARD_USER);
 		Map<String, Integer> statuses = inventory.imageStatuses();
 		assertEquals(statuses.size(), 6, "Different images for 6 products: " + statuses.keySet());

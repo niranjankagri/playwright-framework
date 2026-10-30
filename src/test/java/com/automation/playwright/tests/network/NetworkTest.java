@@ -30,8 +30,8 @@ public class NetworkTest extends UiTest {
 	 * Blocks every image with page.route(...).abort(). The shop must still
 	 * work: all products listed, prices shown, but the images not loaded.
 	 */
-	@Test(description = "The shop works with images blocked")
-	public void shopWorksWithImagesBlocked() {
+	@Test(description = "[TC-115] The shop works with images blocked")
+	public void tc115_shopWorksWithImagesBlocked() {
 		AtomicInteger blocked = new AtomicInteger();
 		page().onRequestFailed(request -> blocked.incrementAndGet());
 		Steps.log("Block every .png, .jpg and .svg request");
@@ -53,8 +53,8 @@ public class NetworkTest extends UiTest {
 	 * the page moves on, images still loading are aborted (Firefox reports
 	 * NS_BINDING_ABORTED, Chromium net::ERR_ABORTED); that is not a server error.
 	 */
-	@Test(groups = "smoke", description = "No failing requests while shopping")
-	public void noFailingRequestsWhileShopping() {
+	@Test(groups = "smoke", description = "[TC-116] No failing requests while shopping")
+	public void tc116_noFailingRequestsWhileShopping() {
 		String shop = Config.get().baseUrl();
 		List<String> failures = new CopyOnWriteArrayList<>();
 		AtomicInteger responses = new AtomicInteger();
@@ -93,8 +93,8 @@ public class NetworkTest extends UiTest {
 	 * tested against edge cases (empty lists, errors) without changing the
 	 * backend.
 	 */
-	@Test(description = "A mocked response replaces the server's")
-	public void mockedResponseReplacesTheServers() {
+	@Test(description = "[TC-117] A mocked response replaces the server's")
+	public void tc117_mockedResponseReplacesTheServers() {
 		String mocked = "{\"firstname\":\"Mocked\",\"lastname\":\"By Playwright\",\"totalprice\":1}";
 		Steps.log("Answer every /booking/1 request with mocked JSON");
 		page().route("**/booking/1", route -> route.fulfill(new Route.FulfillOptions()
