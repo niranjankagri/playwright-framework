@@ -16,3 +16,6 @@ test-output/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Python bytecode from running the tools' unit tests
+__pycache__/
