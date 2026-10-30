@@ -20,8 +20,8 @@ public class AuthApiTest extends ApiTest {
 	/**
 	 * The health check answers 201 "Created" (the API's own convention).
 	 */
-	@Test(groups = "smoke", description = "API health check answers")
-	public void healthCheckAnswers() {
+	@Test(groups = "smoke", description = "[TC-201] API health check answers")
+	public void tc201_healthCheckAnswers() {
 		ApiResponse response = bookings.ping();
 
 		assertEquals(response.status(), 201, "Status of /ping");
@@ -30,8 +30,8 @@ public class AuthApiTest extends ApiTest {
 	/**
 	 * The admin from config.properties gets a token.
 	 */
-	@Test(description = "Admin gets an auth token")
-	public void adminGetsAToken() {
+	@Test(description = "[TC-202] Admin gets an auth token")
+	public void tc202_adminGetsAToken() {
 		ApiResponse response = bookings.auth(Config.get().apiUser(), Config.get().apiPassword());
 
 		assertEquals(response.status(), 200, "Status of /auth");
@@ -43,8 +43,8 @@ public class AuthApiTest extends ApiTest {
 	 * change would be noticed: the status is still 200, and the body says
 	 * "Bad credentials".
 	 */
-	@Test(description = "A wrong password gets no token")
-	public void wrongPasswordGetsNoToken() {
+	@Test(description = "[TC-203] A wrong password gets no token")
+	public void tc203_wrongPasswordGetsNoToken() {
 		ApiResponse response = bookings.auth(Config.get().apiUser(), "wrong-password");
 
 		JsonNode body = response.json();

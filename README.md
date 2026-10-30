@@ -110,6 +110,15 @@ Latest results (5 Oct 2026, headless, 3 threads):
 
 Running all three engines found two real cross-browser differences, both fixed: Firefox reports image downloads it cancels when the page moves on (the network test now ignores browser cancellations), and WebKit showed the old page for a moment after the URL changed (pages now wait for their own unique element). Later, Firefox sometimes ignored a click on the side-menu button, so Logout never appeared; `ShopPage.logout()` now clicks again if the menu did not open.
 
+### Test case IDs
+
+Every test method starts with its case ID and so does its description, e.g.
+`tc112_fullPurchaseAddsUpAndCompletes` / `[TC-112] A full purchase adds up and completes`. All cases are
+written out for a manual run (preconditions, test data, steps, expected results) in
+**[docs/manual-test-cases.md](docs/manual-test-cases.md)**: UI TC-101 to TC-123, API TC-201 to TC-213.
+`TestNgFeaturesTest` reuses the IDs of the API cases it re-checks; the framework, report-demo and three
+technique-only tests have no ID. Run one case: `mvn test -Dtest=CheckoutTest#tc112*`.
+
 ## How to run
 
 Requirements: JDK 17 or newer and Maven. Playwright downloads its own browsers:
@@ -188,6 +197,6 @@ CI also runs every Wednesday at 22:30 UTC without a code change, so a broken dep
 
 ### Repeated TestNG checks in collected reports
 
-`invocationCount=2` intentionally runs `healthCheckAnswersEveryTime` twice. Older Surefire reports used the same JUnit class/name identity for both; current reports may already distinguish them with `[0]` and `[1]`. CI preserves existing unique identities in a separate `target/collection-junit` copy. Only the older ambiguous pair is renamed to `[invocation 1 of 2]` and `[invocation 2 of 2]`; outcomes, failures, durations and totals are unchanged, and original Surefire reports remain untouched. Unexpected duplicates or invocation counts fail preparation. Historical artifacts retain their original identities and may remain marked incomplete in Quality Intelligence.
+`invocationCount=2` intentionally runs `tc212_healthCheckAnswersEveryTime` twice. Older Surefire reports used the same JUnit class/name identity for both; current reports may already distinguish them with `[0]` and `[1]`. CI preserves existing unique identities in a separate `target/collection-junit` copy. Only the older ambiguous pair is renamed to `[invocation 1 of 2]` and `[invocation 2 of 2]`; outcomes, failures, durations and totals are unchanged, and original Surefire reports remain untouched. Unexpected duplicates or invocation counts fail preparation. Historical artifacts retain their original identities and may remain marked incomplete in Quality Intelligence.
 
 CI bounds each browser dependency installation to ten minutes and the whole browser job to 25 minutes. The system dependency step uses the official Ubuntu archive rather than a potentially slow Azure mirror; package signature verification remains enabled.

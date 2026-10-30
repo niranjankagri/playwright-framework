@@ -27,8 +27,8 @@ public class BookingApiTest extends ApiTest {
 	 * Creates a booking: the response echoes it with a new id, and reading it
 	 * back returns exactly the booking that was sent (records compare by value).
 	 */
-	@Test(groups = "smoke", description = "A created booking can be read back")
-	public void createdBookingCanBeReadBack() {
+	@Test(groups = "smoke", description = "[TC-204] A created booking can be read back")
+	public void tc204_createdBookingCanBeReadBack() {
 		Booking booking = TestData.newBooking();
 
 		ApiResponse created = bookings.create(booking);
@@ -46,8 +46,8 @@ public class BookingApiTest extends ApiTest {
 	/**
 	 * Searches by first and last name: the unique last name finds the booking.
 	 */
-	@Test(description = "A booking is found by name")
-	public void bookingIsFoundByName() {
+	@Test(description = "[TC-205] A booking is found by name")
+	public void tc205_bookingIsFoundByName() {
 		Booking booking = TestData.newBooking();
 		int id = givenBooking(booking);
 
@@ -63,8 +63,8 @@ public class BookingApiTest extends ApiTest {
 	/**
 	 * PUT replaces the whole booking; reading it back shows the new values.
 	 */
-	@Test(description = "PUT replaces a booking")
-	public void putReplacesABooking() {
+	@Test(description = "[TC-206] PUT replaces a booking")
+	public void tc206_putReplacesABooking() {
 		Booking booking = TestData.newBooking();
 		int id = givenBooking(booking);
 		Booking changed = booking.withFirstname("Updated").withTotalprice(booking.totalprice() + 50);
@@ -78,8 +78,8 @@ public class BookingApiTest extends ApiTest {
 	/**
 	 * PATCH changes only the given field; every other field stays the same.
 	 */
-	@Test(description = "PATCH changes only the given fields")
-	public void patchChangesOnlyTheGivenFields() {
+	@Test(description = "[TC-207] PATCH changes only the given fields")
+	public void tc207_patchChangesOnlyTheGivenFields() {
 		Booking booking = TestData.newBooking();
 		int id = givenBooking(booking);
 
@@ -91,8 +91,8 @@ public class BookingApiTest extends ApiTest {
 	/**
 	 * Changes without a token are refused with 403, and the booking stays as it was.
 	 */
-	@Test(description = "Changes need a token")
-	public void changesNeedAToken() {
+	@Test(description = "[TC-208] Changes need a token")
+	public void tc208_changesNeedAToken() {
 		Booking booking = TestData.newBooking();
 		int id = givenBooking(booking);
 
@@ -105,8 +105,8 @@ public class BookingApiTest extends ApiTest {
 	 * Deletes a booking: the API answers 201 (its quirk), and the booking is
 	 * then gone (404).
 	 */
-	@Test(description = "A deleted booking is gone")
-	public void deletedBookingIsGone() {
+	@Test(description = "[TC-209] A deleted booking is gone")
+	public void tc209_deletedBookingIsGone() {
 		int id = givenBooking(TestData.newBooking());
 
 		ApiResponse response = bookings.delete(id, adminToken());
@@ -118,8 +118,8 @@ public class BookingApiTest extends ApiTest {
 	/**
 	 * A booking id that does not exist returns 404.
 	 */
-	@Test(description = "An unknown booking is not found")
-	public void unknownBookingIsNotFound() {
+	@Test(description = "[TC-210] An unknown booking is not found")
+	public void tc210_unknownBookingIsNotFound() {
 		assertEquals(bookings.get(Integer.MAX_VALUE).status(), 404, "GET of an unknown id");
 	}
 }

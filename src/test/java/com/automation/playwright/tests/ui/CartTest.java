@@ -20,8 +20,8 @@ public class CartTest extends UiTest {
 	/**
 	 * Adds two products: the badge shows 2 and the cart lists exactly them.
 	 */
-	@Test(groups = "smoke", description = "Added products appear in the cart")
-	public void addedProductsAppearInTheCart() {
+	@Test(groups = "smoke", description = "[TC-109] Added products appear in the cart")
+	public void tc109_addedProductsAppearInTheCart() {
 		InventoryPage inventory = loginAs(TestData.STANDARD_USER)
 				.addToCart(TestData.BACKPACK)
 				.addToCart(TestData.BIKE_LIGHT);
@@ -35,8 +35,8 @@ public class CartTest extends UiTest {
 	/**
 	 * Adds a product and removes it again: the badge disappears.
 	 */
-	@Test(description = "Removing the only product empties the cart")
-	public void removingTheOnlyProductEmptiesTheCart() {
+	@Test(description = "[TC-110] Removing the only product empties the cart")
+	public void tc110_removingTheOnlyProductEmptiesTheCart() {
 		InventoryPage inventory = loginAs(TestData.STANDARD_USER).addToCart(TestData.BACKPACK);
 		assertThat(inventory.cartBadge()).hasText("1");
 
@@ -49,8 +49,8 @@ public class CartTest extends UiTest {
 	 * Adds a product and reloads the page: Sauce Demo keeps the cart in the
 	 * browser's local storage, so the badge must still show 1.
 	 */
-	@Test(description = "The cart survives a page reload")
-	public void cartSurvivesAReload() {
+	@Test(description = "[TC-111] The cart survives a page reload")
+	public void tc111_cartSurvivesAReload() {
 		InventoryPage inventory = loginAs(TestData.STANDARD_USER).addToCart(TestData.BOLT_SHIRT);
 
 		inventory.reload();

@@ -9,7 +9,7 @@ from pathlib import Path
 import xml.etree.ElementTree as ET
 
 CLASS = 'com.automation.playwright.tests.interview.TestNgFeaturesTest'
-NAME = 'healthCheckAnswersEveryTime'
+NAME = 'tc212_healthCheckAnswersEveryTime'
 
 
 def normalize(data: bytes) -> bytes:

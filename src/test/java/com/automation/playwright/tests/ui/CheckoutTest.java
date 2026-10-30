@@ -31,8 +31,8 @@ public class CheckoutTest extends UiTest {
 	 * sum of the list prices, and the total is item total plus tax. The order
 	 * confirmation must follow and the cart must be empty afterwards.
 	 */
-	@Test(groups = "smoke", description = "A full purchase adds up and completes")
-	public void fullPurchaseAddsUpAndCompletes() {
+	@Test(groups = "smoke", description = "[TC-112] A full purchase adds up and completes")
+	public void tc112_fullPurchaseAddsUpAndCompletes() {
 		InventoryPage inventory = loginAs(TestData.STANDARD_USER);
 		double expectedItemTotal = inventory.priceOf(TestData.BACKPACK) + inventory.priceOf(TestData.BOLT_SHIRT);
 		inventory.addToCart(TestData.BACKPACK).addToCart(TestData.BOLT_SHIRT);
@@ -58,8 +58,8 @@ public class CheckoutTest extends UiTest {
 	 * @param zip       the postal code to enter.
 	 * @param expected  the error banner text.
 	 */
-	@Test(dataProvider = "incompleteCheckouts", dataProviderClass = TestData.class, description = "Checkout needs every buyer field")
-	public void checkoutNeedsEveryBuyerField(String caseName, String first, String last, String zip, String expected) {
+	@Test(dataProvider = "incompleteCheckouts", dataProviderClass = TestData.class, description = "[TC-113] Checkout needs every buyer field")
+	public void tc113_checkoutNeedsEveryBuyerField(String caseName, String first, String last, String zip, String expected) {
 		CheckoutInfoPage form = loginAs(TestData.STANDARD_USER).addToCart(TestData.BACKPACK).openCart().checkout();
 
 		form.submit(first, last, zip);
@@ -71,8 +71,8 @@ public class CheckoutTest extends UiTest {
 	 * Cancels the checkout at the buyer form: the shop goes back to the cart
 	 * and the products are still in it.
 	 */
-	@Test(description = "Cancelling the checkout keeps the cart")
-	public void cancellingTheCheckoutKeepsTheCart() {
+	@Test(description = "[TC-114] Cancelling the checkout keeps the cart")
+	public void tc114_cancellingTheCheckoutKeepsTheCart() {
 		CheckoutInfoPage form = loginAs(TestData.STANDARD_USER).addToCart(TestData.BACKPACK).openCart().checkout();
 
 		CartPage cart = form.cancel();
