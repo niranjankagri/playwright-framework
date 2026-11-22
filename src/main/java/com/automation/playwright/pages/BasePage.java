@@ -105,7 +105,7 @@ public abstract class BasePage {
 	}
 
 	/**
-	 * @param testId  the element's data-test value, e.g. "login-button".
+	 * @param testId  the element's data-testid value, e.g. "login-button".
 	 * @return Locator a lazy locator; nothing is searched until it is used.
 	 */
 	protected Locator byTestId(String testId) {
