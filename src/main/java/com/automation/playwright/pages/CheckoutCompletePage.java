@@ -11,9 +11,11 @@ import com.microsoft.playwright.Page;
  */
 public class CheckoutCompletePage extends ShopPage {
 
-	// "Thank you for your order!"
-	@TestId("complete-header")
+	// "Thank you for your order", and the order number under it
+	@TestId("complete-title")
 	private Locator header;
+	@TestId("order-number")
+	private Locator orderNumber;
 
 	/**
 	 * @param page the browser tab this page works on.
@@ -34,5 +36,12 @@ public class CheckoutCompletePage extends ShopPage {
 	 */
 	public Locator header() {
 		return header;
+	}
+
+	/**
+	 * @return Locator the order number, e.g. "ORD-4821".
+	 */
+	public Locator orderNumber() {
+		return orderNumber;
 	}
 }

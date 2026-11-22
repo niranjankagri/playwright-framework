@@ -12,7 +12,7 @@ import com.automation.playwright.pages.InventoryPage;
 import com.automation.playwright.pages.LoginPage;
 
 /**
- * Logging in and out of Sauce Demo, and pages that need a login.
+ * Logging in and out of Pattern Shop, and pages that need a login.
  * The checks use Playwright's assertThat, which retries until the page
  * matches or the timeout ends, so no waits are needed.
  */
@@ -21,15 +21,15 @@ public class LoginTest extends UiTest {
 
 	/**
 	 * Logs in as the standard user and checks the product list: the URL, the
-	 * title and all 6 products.
+	 * title and all 4 products.
 	 */
 	@Test(groups = "smoke", description = "[TC-101] Standard user logs in and sees the products")
 	public void tc101_standardUserSeesProducts() {
 		InventoryPage inventory = loginAs(TestData.STANDARD_USER);
 
-		assertThat(inventory.page()).hasURL(Pattern.compile(".*/inventory\\.html"));
+		assertThat(inventory.page()).hasURL(Pattern.compile(".*/products"));
 		assertThat(inventory.title()).hasText("Products");
-		assertThat(inventory.items()).hasCount(6);
+		assertThat(inventory.items()).hasCount(TestData.PRODUCT_COUNT);
 	}
 
 	/**
@@ -50,20 +50,20 @@ public class LoginTest extends UiTest {
 	}
 
 	/**
-	 * Logs in, logs out through the side menu and checks the login form is back.
+	 * Logs in, signs out with the header button and checks the login form is back.
 	 */
 	@Test(groups = "smoke", description = "[TC-103] User logs out and returns to the login page")
 	public void tc103_userCanLogOut() {
 		LoginPage login = loginAs(TestData.STANDARD_USER).logout();
 
 		assertThat(login.loginButton()).isVisible();
-		assertThat(login.page()).not().hasURL(Pattern.compile(".*/inventory\\.html"));
+		assertThat(login.page()).hasURL(Pattern.compile(".*/login"));
 	}
 
 	/**
 	 * Logs out, then presses the browser's Back button. The shop must not show
-	 * the products again: the login cookie is gone, so it shows the login form
-	 * with an error that names the page.
+	 * the products again: the session is gone and its pages are never cached
+	 * (Cache-Control: no-store), so it shows the login form with a message.
 	 */
 	@Test(description = "[TC-104] Back after logout does not show the products")
 	public void tc104_backAfterLogoutDoesNotShowTheProducts() {
@@ -72,17 +72,17 @@ public class LoginTest extends UiTest {
 
 		login.goBack();
 		assertThat(login.loginButton()).isVisible();
-		assertThat(login.error()).containsText("when you are logged in");
+		assertThat(login.error()).containsText("Please sign in");
 	}
 
 	/**
 	 * Opens the product list URL without logging in. The shop must refuse it
-	 * and name the page in its error.
+	 * and ask the visitor to sign in.
 	 */
 	@Test(description = "[TC-105] The product list requires a login")
 	public void tc105_productListRequiresLogin() {
 		LoginPage login = openProductListLoggedOut();
 
-		assertThat(login.error()).hasText("Epic sadface: You can only access '/inventory.html' when you are logged in.");
+		assertThat(login.error()).hasText("Please sign in to see that page.");
 	}
 }

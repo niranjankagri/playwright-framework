@@ -16,33 +16,33 @@ import com.microsoft.playwright.Response;
 import com.microsoft.playwright.options.AriaRole;
 
 /**
- * The Sauce Demo login page ({@code /}).
+ * The Pattern Shop sign-in page ({@code /login}).
  */
 public class LoginPage extends BasePage {
 
-	// User name and password inputs, and the Login button
+	// User name and password inputs, and the Sign in button
 	@TestId("username")
 	private Locator username;
 	@TestId("password")
 	private Locator password;
 	@TestId("login-button")
 	private Locator loginButton;
-	// Red banner above the button, e.g. "Epic sadface: Username is required"
-	@TestId("error")
+	// Red banner above the form, e.g. "User name and password are required."
+	@TestId("login-error")
 	private Locator error;
 	// The whole login form, for the element screenshot
 	@Css("form")
 	private Locator form;
-	// The same user name field and Login button found in other ways, for the locator-strategy example
-	@Placeholder("Username")
+	// The same user name field and Sign in button found in other ways, for the locator-strategy example
+	@Placeholder("User name")
 	private Locator usernameByPlaceholder;
-	@Css("#user-name")
+	@Css("#username")
 	private Locator usernameByCss;
-	@XPath("//input[@name='user-name']")
+	@XPath("//input[@name='username']")
 	private Locator usernameByXPath;
-	@Role(value = AriaRole.TEXTBOX, name = "Username")
+	@Role(value = AriaRole.TEXTBOX, name = "User name")
 	private Locator usernameByRole;
-	@Role(value = AriaRole.BUTTON, name = "Login", exact = true)
+	@Role(value = AriaRole.BUTTON, name = "Sign in", exact = true)
 	private Locator loginButtonByRole;
 
 	/**
@@ -53,14 +53,21 @@ public class LoginPage extends BasePage {
 	}
 
 	/**
-	 * Opens the login page (the context's base URL).
+	 * Opens the login page.
 	 *
 	 * @return LoginPage this page.
 	 */
 	public LoginPage open() {
 		Steps.log("Open the login page");
-		page.navigate("/");
+		page.navigate("/login");
 		return this;
+	}
+
+	/**
+	 * Waits until the login form is shown.
+	 */
+	public void waitUntilLoaded() {
+		loginButton.waitFor();
 	}
 
 	/**
@@ -80,7 +87,7 @@ public class LoginPage extends BasePage {
 	}
 
 	/**
-	 * Logs in with the shared Sauce Demo password and waits for the products.
+	 * Logs in with the shared demo password and waits for the products.
 	 *
 	 * @param user           the user name, e.g. "standard_user".
 	 * @return InventoryPage the product list shown after login.
@@ -132,10 +139,10 @@ public class LoginPage extends BasePage {
 	 * cannot be missed.
 	 *
 	 * @param user      the user name.
-	 * @return Response the first .jpg response after logging in.
+	 * @return Response the first product image (.svg) response after logging in.
 	 */
 	public Response loginAndWaitForFirstImage(String user) {
-		return page.waitForResponse(response -> response.url().endsWith(".jpg"), () -> loginAs(user));
+		return page.waitForResponse(response -> response.url().endsWith(".svg"), () -> loginAs(user));
 	}
 
 	/**
@@ -155,7 +162,7 @@ public class LoginPage extends BasePage {
 	}
 
 	/**
-	 * @return Locator the Login button found by its role and name.
+	 * @return Locator the Sign in button found by its role and name.
 	 */
 	public Locator loginButtonByRole() {
 		return loginButtonByRole;
@@ -169,7 +176,7 @@ public class LoginPage extends BasePage {
 	}
 
 	/**
-	 * @return Locator the Login button (visible only on the login page).
+	 * @return Locator the Sign in button (visible only on the login page).
 	 */
 	public Locator loginButton() {
 		return loginButton;

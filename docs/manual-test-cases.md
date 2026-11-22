@@ -7,7 +7,7 @@ report leads straight to the case below.
 
 | ID range | Area | Automated in |
 |---|---|---|
-| TC-101 to TC-123 | Sauce Demo shop in the browser (UI, network, sessions) | `tests/ui`, `tests/network`, `tests/interview/PlaywrightScenariosTest` |
+| TC-101 to TC-123 | Pattern Shop in the browser (UI, network, sessions) | `tests/ui`, `tests/network`, `tests/interview/PlaywrightScenariosTest` |
 | TC-201 to TC-213 | Restful Booker REST API | `tests/api`, `tests/interview/TestNgFeaturesTest` |
 
 A case may be automated by more than one method: `TestNgFeaturesTest` shows TestNG features
@@ -22,11 +22,12 @@ element screenshot, a JavaScript dialog the test opens itself).
 
 ## Setup for manual runs
 
-- Shop: <https://www.saucedemo.com>, password `secret_sauce` for every user: `standard_user`,
-  `locked_out_user`, `problem_user`.
+- Shop: Pattern Shop at <http://localhost:8080> (`docker run -d -p 8080:8080 ghcr.io/niranjankagri/pattern-shop-demo-app`)
+  or the hosted demo <https://pattern-shop.onrender.com>; password `secret_sauce` for every user: `standard_user`,
+  `locked_user`, `problem_user`.
 - API: <https://restful-booker.herokuapp.com>, admin user `admin` / `password123`. A public demo that
   resets itself regularly; create your own booking for each case.
-- Products used: Sauce Labs Backpack, Sauce Labs Bike Light, Sauce Labs Bolt T-Shirt.
+- Products used: Backpack, Bike Light, Bolt T-Shirt (the shop has four products).
 
 ## Summary
 
@@ -52,7 +53,7 @@ element screenshot, a JavaScript dialog the test opens itself).
 | TC-118 | Login works with the keyboard only | Accessibility | Medium | `PlaywrightScenariosTest.tc118_...` |
 | TC-119 | A second tab shares the login | Session | Medium | `PlaywrightScenariosTest.tc119_...` |
 | TC-120 | A saved login skips the login form | Session | Medium | `PlaywrightScenariosTest.tc120_...` |
-| TC-121 | The cart is kept in local storage | Regression | Low | `PlaywrightScenariosTest.tc121_...` |
+| TC-121 | JavaScript cannot read the HttpOnly session cookie | Security | Low | `PlaywrightScenariosTest.tc121_...` |
 | TC-122 | Logging in loads the product images | Network | Low | `PlaywrightScenariosTest.tc122_...` |
 | TC-123 | Product images are not broken, except for the problem user | Regression | Medium | `PlaywrightScenariosTest.tc123_...` |
 | TC-201 | API health check answers | API / Smoke | High | `AuthApiTest.tc201_healthCheckAnswers`, `TestNgFeaturesTest.tc201_apiIsUp` |
@@ -77,41 +78,41 @@ element screenshot, a JavaScript dialog the test opens itself).
 
 | # | Step | Expected result |
 |---|---|---|
-| 1 | Open the shop, log in as `standard_user` / `secret_sauce` | URL ends with `/inventory.html` |
-| 2 | Look at the page | Title "Products"; 6 products |
+| 1 | Open the shop, log in as `standard_user` / `secret_sauce` | URL ends with `/products` |
+| 2 | Look at the page | Title "Products"; 4 products |
 
 ### TC-102 Rejected logins show the right message
 
-For every data set: open the login page, enter the user and password, click **Login**. Expected: the
-message below, and the **Login** button is still shown.
+For every data set: open the login page, enter the user and password, click **Sign in**. Expected: the
+message below, and the **Sign in** button is still shown.
 
 | Data set | User | Password | Message |
 |---|---|---|---|
-| wrong password | `standard_user` | `wrong_password` | Epic sadface: Username and password do not match any user in this service |
-| unknown user | `no_such_user` | `secret_sauce` | Epic sadface: Username and password do not match any user in this service |
-| missing username | (empty) | `secret_sauce` | Epic sadface: Username is required |
-| missing password | `standard_user` | (empty) | Epic sadface: Password is required |
-| locked-out user | `locked_out_user` | `secret_sauce` | Epic sadface: Sorry, this user has been locked out. |
+| wrong password | `standard_user` | `wrong_password` | User name and password do not match any user. |
+| unknown user | `no_such_user` | `secret_sauce` | User name and password do not match any user. |
+| missing username | (empty) | `secret_sauce` | User name and password are required. |
+| missing password | `standard_user` | (empty) | User name and password are required. |
+| locked-out user | `locked_user` | `secret_sauce` | This user has been locked out. |
 
 ### TC-103 User logs out and returns to the login page
 
 | # | Step | Expected result |
 |---|---|---|
 | 1 | Log in as `standard_user` | Products page |
-| 2 | Open the menu (☰), click **Logout** | Login page with **Login** button; URL is no longer `/inventory.html` |
+| 2 | Click **Sign out** in the header | Login page with the **Sign in** button; URL ends with `/login` |
 
 ### TC-104 Back after logout does not show the products
 
 | # | Step | Expected result |
 |---|---|---|
 | 1 | Log in, log out (TC-103) | Login page |
-| 2 | Press the browser's **Back** button | Still the login page, with a message containing "when you are logged in" |
+| 2 | Press the browser's **Back** button | Still the login page, with "Please sign in to see that page." (the shop's pages are never cached) |
 
 ### TC-105 The product list requires a login
 
 | # | Step | Expected result |
 |---|---|---|
-| 1 | Logged out, open `https://www.saucedemo.com/inventory.html` directly | Login page: "Epic sadface: You can only access '/inventory.html' when you are logged in." |
+| 1 | Logged out, open `/products` directly | Login page: "Please sign in to see that page." |
 
 ## UI: products (`InventoryTest`)
 
@@ -132,14 +133,14 @@ For every data set: choose the option in the sort list. Expected: the order belo
 
 | # | Step | Expected result |
 |---|---|---|
-| 1 | Look at the product list | 6 products; every one has a name and a price above 0 |
+| 1 | Look at the product list | 4 products; every one has a name and a price above 0 |
 
 ### TC-108 Product details match the list
 
 | # | Step | Expected result |
 |---|---|---|
-| 1 | Note the price of Sauce Labs Backpack in the list; open the product | Detail page: same name, same price |
-| 2 | Click **Back to products** | Product list with 6 products |
+| 1 | Note the price of the Backpack in the list; open the product (its name) | Detail page: same name, same price |
+| 2 | Click **Back to products** | Product list with 4 products |
 
 ## UI: cart (`CartTest`)
 
@@ -149,22 +150,21 @@ Preconditions for all: logged in as `standard_user`, cart empty.
 
 | # | Step | Expected result |
 |---|---|---|
-| 1 | **Add to cart** on Sauce Labs Backpack and Sauce Labs Bike Light | Cart badge `2` |
-| 2 | Open the cart | Title "Your Cart"; Backpack, then Bike Light |
+| 1 | **Add to cart** on Backpack and Bike Light | Cart count `2` |
+| 2 | Open the cart | Title "Your cart"; Backpack, then Bike Light |
 
 ### TC-110 Removing the only product empties the cart
 
 | # | Step | Expected result |
 |---|---|---|
-| 1 | Add the Backpack | Badge `1` |
-| 2 | Click **Remove** on it | Badge gone |
-| 3 | Open the cart | No items |
+| 1 | Add the Backpack | Cart count `1` |
+| 2 | Open the cart, click **Remove** on it | No items; cart count `0` |
 
 ### TC-111 The cart survives a page reload
 
 | # | Step | Expected result |
 |---|---|---|
-| 1 | Add Sauce Labs Bolt T-Shirt, reload the page (F5) | Badge still `1` |
+| 1 | Add the Bolt T-Shirt, reload the page (F5) | Cart count still `1` (the shop keeps the cart for the session) |
 
 ## UI: checkout (`CheckoutTest`)
 
@@ -174,10 +174,10 @@ Preconditions for all: logged in as `standard_user`, cart empty.
 
 | # | Step | Expected result |
 |---|---|---|
-| 1 | Note the list prices of Backpack and Bolt T-Shirt; add both; open the cart; **Checkout** | "Checkout: Your Information" |
+| 1 | Note the list prices of Backpack and Bolt T-Shirt; add both; open the cart; **Checkout** | "Checkout: your information" |
 | 2 | First name `Play`, last name `Wright`, postal code `10115`, **Continue** | Overview lists Backpack, then Bolt T-Shirt |
 | 3 | Check the amounts | Item total = sum of the two list prices; Total = item total + tax (to the cent) |
-| 4 | **Finish** | "Thank you for your order!"; cart badge gone |
+| 4 | **Finish** | "Thank you for your order" and an order number (ORD- and four digits); cart count `0` |
 
 ### TC-113 Checkout needs every buyer field
 
@@ -194,7 +194,7 @@ Expected: the message below, and the page is still "Checkout: Your Information".
 
 | # | Step | Expected result |
 |---|---|---|
-| 1 | Add the Backpack, open the cart, **Checkout**, then **Cancel** | "Your Cart" with the Backpack; badge `1` |
+| 1 | Add the Backpack, open the cart, **Checkout**, then **Cancel** | "Your cart" with the Backpack; cart count `1` |
 
 ## UI: network (`NetworkTest`)
 
@@ -202,14 +202,14 @@ Expected: the message below, and the page is still "Checkout: Your Information".
 
 | # | Step | Expected result |
 |---|---|---|
-| 1 | DevTools › Network › block request patterns `*.png`, `*.jpg`, `*.svg`; log in | 6 products shown, without pictures |
+| 1 | DevTools › Network › block request patterns `*.png`, `*.jpg`, `*.svg`; log in | 4 products shown, without pictures |
 | 2 | Check the first product image | Not loaded (naturalWidth `0`); blocked requests listed in DevTools |
 
 ### TC-116 No failing requests while shopping
 
 | # | Step | Expected result |
 |---|---|---|
-| 1 | DevTools › Network open; log in, add the Backpack, open the cart | Requests to `www.saucedemo.com` answered; none with status 400 or higher, none failed (cancelled requests excepted) |
+| 1 | DevTools › Network open; log in, add the Backpack, open the cart | Requests to the shop answered; none with status 400 or higher, none failed (cancelled requests excepted) |
 
 ### TC-117 A mocked API response replaces the server's
 
@@ -225,27 +225,28 @@ Needs a proxy or DevTools **Override content**.
 
 | # | Step | Expected result |
 |---|---|---|
-| 1 | Click into the user name field; type `standard_user`, Tab, `secret_sauce`, Enter | Products page with 6 products (no mouse needed) |
+| 1 | Click into the user name field; type `standard_user`, Tab, `secret_sauce`, Enter | Products page with 4 products (no mouse needed) |
 
 ### TC-119 A second tab shares the login
 
 | # | Step | Expected result |
 |---|---|---|
-| 1 | Log in; open `/inventory.html` in a new tab of the same window | The new tab shows the 6 products without logging in |
+| 1 | Log in; open `/products` in a new tab of the same window | The new tab shows the 4 products without logging in |
 
 ### TC-120 A saved login skips the login form
 
 | # | Step | Expected result |
 |---|---|---|
-| 1 | Log in; in DevTools › Application copy the `session-username` cookie | |
-| 2 | In a fresh private window set the same cookie on `www.saucedemo.com`, open `/inventory.html` | 6 products, no login form |
+| 1 | Log in; in DevTools › Application copy the `SESSION` cookie | |
+| 2 | In a fresh private window set the same cookie on the shop's address, open `/products` | 4 products, no login form |
 
-### TC-121 The cart is kept in local storage
+### TC-121 JavaScript cannot read the HttpOnly session cookie
 
 | # | Step | Expected result |
 |---|---|---|
 | 1 | Log in, add the Backpack | |
-| 2 | DevTools › Application › Local Storage | `cart-contents` = `[4]` (the Backpack's id); the page is fully loaded (`document.readyState` `complete`) |
+| 2 | DevTools › Application › Cookies | `SESSION` is there, with **HttpOnly** ticked |
+| 3 | DevTools › Console: `document.readyState`, then `document.cookie` | `complete`; the cookie text does not contain `SESSION` (a script in the page cannot read the session) |
 
 ### TC-122 Logging in loads the product images
 
@@ -257,8 +258,8 @@ Needs a proxy or DevTools **Override content**.
 
 | # | Step | Expected result |
 |---|---|---|
-| 1 | Log in as `standard_user`, look at the 6 product images | 6 different pictures, every one loads (`200`) |
-| 2 | Log out, log in as `problem_user` | Every product shows the same (wrong) picture: the known bug of this demo user |
+| 1 | Log in as `standard_user`, look at the 4 product images | 4 different pictures, every one loads (`200`) |
+| 2 | Log out, log in as `problem_user` | Every product shows the same placeholder picture: the planted bug of this demo user |
 
 ---
 

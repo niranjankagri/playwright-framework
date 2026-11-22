@@ -60,7 +60,7 @@ public final class Config {
 	}
 
 	/**
-	 * @return String the password of the Sauce Demo users.
+	 * @return String the password of the Pattern Shop demo users.
 	 */
 	public String password() {
 		return value("password");

@@ -63,8 +63,8 @@ public final class BrowserManager {
 		Playwright playwright = PLAYWRIGHT.get();
 		if (playwright == null) {
 			playwright = Playwright.create();
-			// Sauce Demo marks its elements with data-test, so getByTestId() reads that attribute
-			playwright.selectors().setTestIdAttribute("data-test");
+			// Pattern Shop marks its elements with data-testid (Playwright's default), set here so the choice is visible
+			playwright.selectors().setTestIdAttribute("data-testid");
 			// Auto-waiting assertions (assertThat) wait as long as page actions
 			PlaywrightAssertions.setDefaultAssertionTimeout(Config.get().timeoutMillis());
 			PLAYWRIGHT.set(playwright);

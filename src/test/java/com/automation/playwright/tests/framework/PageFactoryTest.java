@@ -105,11 +105,11 @@ public class PageFactoryTest extends UiTest {
 	 */
 	static class LoginHeader extends BasePage {
 
-		// The "Swag Labs" logo above the form
-		@Text(value = "Swag Labs", exact = true)
+		// The tagline next to the "Pattern Shop" logo above the form
+		@Text(value = "demo for test automation", exact = true)
 		Locator logo;
 		// The user name and password inputs
-		@Css("form input[type=text], form input[type=password]")
+		@Css("form input")
 		Locator inputs;
 
 		/**

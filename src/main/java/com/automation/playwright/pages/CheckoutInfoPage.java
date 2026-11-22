@@ -13,19 +13,19 @@ import com.microsoft.playwright.Page;
 public class CheckoutInfoPage extends ShopPage {
 
 	// Form fields and the Continue button
-	@TestId("firstName")
+	@TestId("first-name")
 	private Locator firstName;
-	@TestId("lastName")
+	@TestId("last-name")
 	private Locator lastName;
-	@TestId("postalCode")
+	@TestId("postal-code")
 	private Locator postalCode;
 	@TestId("continue")
 	private Locator continueButton;
 	// Cancel goes back to the cart
 	@TestId("cancel")
 	private Locator cancel;
-	// Red banner, e.g. "Error: First Name is required"
-	@TestId("error")
+	// Red banner, e.g. "First name is required."
+	@TestId("checkout-error")
 	private Locator error;
 
 	/**

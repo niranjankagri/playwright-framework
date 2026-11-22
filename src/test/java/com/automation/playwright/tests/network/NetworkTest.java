@@ -38,7 +38,7 @@ public class NetworkTest extends UiTest {
 		page().route("**/*.{png,jpg,jpeg,svg}", Route::abort);
 
 		InventoryPage inventory = loginAs(TestData.STANDARD_USER);
-		assertThat(inventory.items()).hasCount(6);
+		assertThat(inventory.items()).hasCount(TestData.PRODUCT_COUNT);
 		// naturalWidth is 0 for an image that never loaded
 		int width = inventory.firstImageWidth();
 		Steps.log("Requests blocked: " + blocked.get() + ", first product image width: " + width);

@@ -90,7 +90,7 @@ public abstract class UiTest extends PlaywrightTest {
 	/**
 	 * Opens the login page and logs in.
 	 *
-	 * @param user           a Sauce Demo user, e.g. "standard_user".
+	 * @param user           a Pattern Shop user, e.g. "standard_user".
 	 * @return InventoryPage the product list.
 	 */
 	protected InventoryPage loginAs(String user) {

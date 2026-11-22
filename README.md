@@ -2,7 +2,7 @@
 
 Test automation framework built with **Playwright for Java and TestNG**. It tests a web shop through the browser and a REST API directly, both with Playwright, and runs on **Chromium, Firefox and WebKit**.
 
-- **UI:** the [Sauce Demo](https://www.saucedemo.com) shop: login, product list, sorting, cart and a full checkout.
+- **UI:** [Pattern Shop](https://github.com/niranjankagri/pattern-shop-demo-app), my own demo shop (run from its Docker image): login, product list, sorting, product pages, cart and a full checkout.
 - **API:** the [Restful Booker](https://restful-booker.herokuapp.com) API: auth and booking create, read, search, update, patch and delete, including error cases.
 - **Network:** blocking requests, watching every response, and mocking a server response in the browser.
 - **Interview scenarios:** common Playwright tasks (locator strategies, keyboard, tabs, saved login, JavaScript, dialogs, waiting for responses, broken images) and TestNG features (soft asserts, dependencies, retries, parameters…), each as a small working test, plus an [interview questions PDF](docs/interview-questions.pdf) whose answers link to this code.
@@ -38,7 +38,7 @@ playwright-framework
     ├── main/java/com/automation/playwright
     │   ├── config      Config: config.properties + -D overrides
     │   ├── browser     BrowserManager: Playwright + browser per thread, context per test, trace + video
-    │   ├── pages       BasePage, ShopPage (header, cart, menu), LoginPage, InventoryPage, ProductPage,
+    │   ├── pages       BasePage, ShopPage (header, cart, sign-out), LoginPage, InventoryPage, ProductPage,
     │   │               CartPage, CheckoutInfoPage, CheckoutOverviewPage, CheckoutCompletePage,
     │   │               JsonPage (a JSON address opened in the browser)
     │   │   └── factory PageFactory + locator annotations: @TestId, @Role, @Placeholder, @Text, @Css, @XPath
@@ -75,11 +75,11 @@ playwright-framework
   `BasePage`'s constructor calls `PageFactory.initLocators(this, page)`, which fills every annotated `Locator` field (also the ones inherited from `ShopPage`). Selenium needs its PageFactory for lazy proxies against stale elements; a Playwright `Locator` is lazy already, so here the factory only gives one declarative style. A wrong field (final, not a `Locator`, two annotations) fails when the page is created. Locators that depend on a value, such as the card of a named product, stay methods.
 - **Page Object Model.** Every locator and every browser call (navigation, Back/Reload, JavaScript, dialogs, tabs, saved logins, image checks) lives in a page object under `pages`; tests only call page methods and check the results. The only Playwright calls left in tests are the network routes and listeners that `NetworkTest` sets up as its test conditions.
 - **One Playwright per thread, one context per test.** Playwright objects must not be shared between threads, so `BrowserManager` keeps a Playwright and a browser per thread and reuses them. Every UI test gets a fresh `BrowserContext` (own cookies and storage), which is fast and keeps tests isolated, so test classes run in parallel safely.
-- **No waits in the tests.** Playwright waits for elements to be ready before acting, and its `assertThat(...)` checks retry until the page matches. Pages only add a `waitUntilLoaded()` that waits for an element unique to that page, because Sauce Demo changes the URL before it draws the new page (WebKit showed this).
-- **Locators by test id.** Sauce Demo marks elements with `data-test`; `selectors().setTestIdAttribute("data-test")` makes `page.getByTestId("login-button")` use it. Cards are found with `filter(has: ...)`, buttons by role and name.
+- **No waits in the tests.** Playwright waits for elements to be ready before acting, and its `assertThat(...)` checks retry until the page matches. Pages only add a `waitUntilLoaded()` that waits for an element unique to that page, so a step never reads the page it just left (the shop answers forms with a redirect, and the URL can change before the new page is drawn).
+- **Locators by test id.** Pattern Shop marks elements with `data-testid` (Playwright's default, set explicitly with `selectors().setTestIdAttribute("data-testid")`), so `page.getByTestId("login-button")` finds them. Cards are found with `filter(has: ...)`, buttons by role and name.
 - **API through Playwright too.** `ApiClient` wraps Playwright's `APIRequestContext`; requests and responses are JSON via Jackson records, and every call is logged as a step, e.g. *POST "/booking" → 200 (312 ms)*.
 - **API test data setup and cleanup.** API tests create their own bookings through the API (`givenBooking(...)`), and `ApiTest` deletes them after each test, so the shared demo API is left as it was.
-- **Clear login failures.** `LoginPage.loginAs` waits for whichever comes first, the product list or the error banner (`locator.or(...)`), and throws the shop's message at once (*Login as "locked_out_user" failed: …*) instead of timing out.
+- **Clear login failures.** `LoginPage.loginAs` waits for whichever comes first, the product list or the error banner (`locator.or(...)`), and throws the shop's message at once (*Login as "locked_user" failed: …*) instead of timing out.
 - **Failure evidence.** Every UI test records a trace and a video; for a passed test both are discarded, for a failed one they are kept in `target/artifacts` with a full-page screenshot.
 
 ## Tests
@@ -93,7 +93,7 @@ playwright-framework
 | `AuthApiTest` | `api` | Health check (`smoke`) · admin gets a token · a wrong password gets no token (the API answers 200 with "Bad credentials") |
 | `BookingApiTest` | `api` | Created booking can be read back (`smoke`) · found by name · PUT replaces · PATCH changes only given fields · changes need a token (403) · deleted booking is gone (201, then 404) · unknown booking 404 |
 | `NetworkTest` | `network` | Shop works with images blocked · no failing requests while shopping (`smoke`) · mocked response replaces the server's |
-| `PlaywrightScenariosTest` | `interview` | Five locator strategies find the same field (test id, placeholder, CSS, XPath, role) · keyboard-only login · a second tab shares the login · a saved login (`storageState`) skips the login form · JavaScript reads the page and local storage (`evaluate`) · element screenshot is a PNG · a browser dialog is read and accepted · `waitForResponse` for the product images · product images not broken (checked with `page.request()`), except for `problem_user` |
+| `PlaywrightScenariosTest` | `interview` | Five locator strategies find the same field (test id, placeholder, CSS, XPath, role) · keyboard-only login · a second tab shares the login · a saved login (`storageState`) skips the login form · JavaScript reads the page but not the HttpOnly session cookie (`evaluate`, `context().cookies()`) · element screenshot is a PNG · a browser dialog is read and accepted · `waitForResponse` for the product images · product images not broken (checked with `page.request()`), except for `problem_user` |
 | `TestNgFeaturesTest` | `interview` | `SoftAssert` · `expectedExceptions` + message regex · `priority` + `dependsOnMethods` (2 tests) · `invocationCount = 2` · `timeOut` · `retryAnalyzer` (`RetryOnce`) · `@Parameters` + `@Optional` |
 | `PageFactoryTest` | `framework` | Every page gets all its annotated locators (63 in 8 pages) · `@Text` and `@Css` find the real elements · wrong fields (final, two annotations, not a `Locator`) fail when the page is created |
 | `ReportDemoTest` | `demo` | **On purpose**, to show the report (excluded by default): 2 failures (a wrong assertion; the login helper with a locked-out user) and 2 skips (`SkipException`; a failed dependency) |
@@ -121,9 +121,10 @@ technique-only tests have no ID. Run one case: `mvn test -Dtest=CheckoutTest#tc1
 
 ## How to run
 
-Requirements: JDK 17 or newer and Maven. Playwright downloads its own browsers:
+Requirements: JDK 17 or newer, Maven, and Docker for the shop. Playwright downloads its own browsers:
 
 ```bash
+docker run -d -p 8080:8080 ghcr.io/niranjankagri/pattern-shop-demo-app:latest   # the shop, on :8080
 mvn exec:java -Dexec.args="install"          # once: download Chromium, Firefox and WebKit
 mvn clean test                               # all tests, headless Chromium
 mvn clean test -Dbrowser=firefox             # chromium (default), firefox or webkit
@@ -142,8 +143,8 @@ In the IDE, run `testng.xml` (it also sets the `apiUser` suite parameter) or any
 
 | Key | Default | Meaning |
 |---|---|---|
-| `baseUrl` | `https://www.saucedemo.com` | Web shop under test |
-| `password` | `secret_sauce` | Password of the Sauce Demo users |
+| `baseUrl` | `http://localhost:8080` | Web shop under test (Pattern Shop; the hosted demo `https://pattern-shop.onrender.com` works too, it sleeps when idle) |
+| `password` | `secret_sauce` | Password of the Pattern Shop demo users |
 | `apiUrl` | `https://restful-booker.herokuapp.com` | REST API under test |
 | `apiUser` / `apiPassword` | `admin` / `password123` | API admin (public demo account) |
 | `browser` | `chromium` | `chromium`, `firefox` or `webkit` |

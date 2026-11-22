@@ -34,16 +34,16 @@ public class InventoryTest extends UiTest {
 	public void tc106_productsAreSorted(String label, String option) {
 		InventoryPage inventory = loginAs(TestData.STANDARD_USER).sortBy(option);
 
-		if (option.equals("az") || option.equals("za")) {
+		if (option.startsWith("name")) {
 			List<String> names = inventory.productNames();
 			List<String> expected = new ArrayList<>(names);
-			expected.sort(option.equals("az") ? Comparator.naturalOrder() : Comparator.reverseOrder());
+			expected.sort(option.equals("name-asc") ? Comparator.naturalOrder() : Comparator.reverseOrder());
 			Steps.log("Names shown: " + names);
 			assertEquals(names, expected, "Product names sorted by " + label);
 		} else {
 			List<Double> prices = inventory.productPrices();
 			List<Double> expected = new ArrayList<>(prices);
-			expected.sort(option.equals("lohi") ? Comparator.naturalOrder() : Comparator.reverseOrder());
+			expected.sort(option.equals("price-asc") ? Comparator.naturalOrder() : Comparator.reverseOrder());
 			Steps.log("Prices shown: " + prices);
 			assertEquals(prices, expected, "Product prices sorted by " + label);
 		}
@@ -58,7 +58,7 @@ public class InventoryTest extends UiTest {
 
 		List<String> names = inventory.productNames();
 		List<Double> prices = inventory.productPrices();
-		assertEquals(names.size(), 6, "Products shown");
+		assertEquals(names.size(), TestData.PRODUCT_COUNT, "Products shown");
 		assertTrue(names.stream().noneMatch(String::isBlank), "Every product should have a name");
 		assertTrue(prices.stream().allMatch(price -> price > 0), "Every price should be positive: " + prices);
 	}
@@ -77,6 +77,6 @@ public class InventoryTest extends UiTest {
 		assertEquals(product.price(), listPrice, "Price on the detail page");
 
 		InventoryPage back = product.backToProducts();
-		assertThat(back.items()).hasCount(6);
+		assertThat(back.items()).hasCount(TestData.PRODUCT_COUNT);
 	}
 }

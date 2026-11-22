@@ -28,26 +28,27 @@ public class CartTest extends UiTest {
 		assertThat(inventory.cartBadge()).hasText("2");
 
 		CartPage cart = inventory.openCart();
-		assertThat(cart.title()).hasText("Your Cart");
+		assertThat(cart.title()).hasText("Your cart");
 		assertThat(cart.items()).hasText(new String[] { TestData.BACKPACK, TestData.BIKE_LIGHT });
 	}
 
 	/**
-	 * Adds a product and removes it again: the badge disappears.
+	 * Adds a product and removes it again in the cart: the cart is empty and
+	 * the count shows 0.
 	 */
 	@Test(description = "[TC-110] Removing the only product empties the cart")
 	public void tc110_removingTheOnlyProductEmptiesTheCart() {
 		InventoryPage inventory = loginAs(TestData.STANDARD_USER).addToCart(TestData.BACKPACK);
 		assertThat(inventory.cartBadge()).hasText("1");
 
-		inventory.removeFromCart(TestData.BACKPACK);
-		assertThat(inventory.cartBadge()).isHidden();
-		assertThat(inventory.openCart().items()).hasCount(0);
+		CartPage cart = inventory.openCart().remove(TestData.BACKPACK);
+		assertThat(cart.items()).hasCount(0);
+		assertThat(cart.cartBadge()).hasText("0");
 	}
 
 	/**
-	 * Adds a product and reloads the page: Sauce Demo keeps the cart in the
-	 * browser's local storage, so the badge must still show 1.
+	 * Adds a product and reloads the page: the shop keeps the cart on the server
+	 * for the session (cookie), so the count must still show 1.
 	 */
 	@Test(description = "[TC-111] The cart survives a page reload")
 	public void tc111_cartSurvivesAReload() {

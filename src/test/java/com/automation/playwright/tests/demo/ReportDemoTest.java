@@ -48,7 +48,7 @@ public class ReportDemoTest extends UiTest {
 	@Test(description = "Demo skip: the check needs a payment sandbox the demo shop does not have")
 	public void skippedWhenPreconditionIsMissing() {
 		openLoginPage();
-		throw new SkipException("Sauce Demo has no payment provider sandbox, so payment errors cannot be tested");
+		throw new SkipException("The shop has no payment provider sandbox, so payment errors cannot be tested");
 	}
 
 	/**

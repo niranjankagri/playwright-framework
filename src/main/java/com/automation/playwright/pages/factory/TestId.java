@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 
 /**
  * Fills a {@code Locator} field with {@code page.getByTestId(value)}.
- * Sauce Demo's test id attribute is {@code data-test} (set in BrowserManager).
+ * Pattern Shop's test id attribute is {@code data-testid} (set in BrowserManager).
  * <p>
  * Example: {@code @TestId("checkout") private Locator checkout;}
  */
