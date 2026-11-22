@@ -8,6 +8,7 @@ import com.automation.playwright.pages.factory.TestId;
 import com.automation.playwright.utils.Steps;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
+import com.microsoft.playwright.options.AriaRole;
 
 /**
  * The cart ({@code /cart.html}).
@@ -15,8 +16,11 @@ import com.microsoft.playwright.Page;
 public class CartPage extends ShopPage {
 
 	// Names of the products in the cart, and the Checkout button
-	@TestId("inventory-item-name")
+	@TestId("cart-item-name")
 	private Locator names;
+	// One row per product in the cart
+	@TestId("cart-item")
+	private Locator rows;
 	@TestId("checkout")
 	private Locator checkout;
 
@@ -51,6 +55,20 @@ public class CartPage extends ShopPage {
 	/**
 	 * @return CheckoutInfoPage the first checkout step, after clicking Checkout.
 	 */
+	/**
+	 * Removes a product with the Remove button in its row; the cart reloads without it.
+	 *
+	 * @param name      the product name.
+	 * @return CartPage this page.
+	 */
+	public CartPage remove(String name) {
+		Steps.log("Remove \"" + name + "\" from the cart");
+		Locator row = rows.filter(new Locator.FilterOptions().setHas(page.getByText(name, new Page.GetByTextOptions().setExact(true))));
+		row.getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Remove")).click();
+		assertThat(row).hasCount(0);
+		return this;
+	}
+
 	public CheckoutInfoPage checkout() {
 		Steps.log("Check out");
 		checkout.click();

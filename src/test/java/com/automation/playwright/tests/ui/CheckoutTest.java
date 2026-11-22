@@ -4,6 +4,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 import static org.testng.Assert.assertEquals;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.testng.annotations.Test;
 
@@ -44,8 +45,9 @@ public class CheckoutTest extends UiTest {
 		assertEquals(overview.total(), overview.itemTotal() + overview.tax(), CENT, "Total = item total + tax");
 
 		CheckoutCompletePage complete = overview.finish();
-		assertThat(complete.header()).hasText("Thank you for your order!");
-		assertThat(complete.cartBadge()).isHidden();
+		assertThat(complete.header()).hasText("Thank you for your order");
+		assertThat(complete.orderNumber()).hasText(Pattern.compile("ORD-\\d{4}"));
+		assertThat(complete.cartBadge()).hasText("0");
 	}
 
 	/**
@@ -64,7 +66,7 @@ public class CheckoutTest extends UiTest {
 
 		form.submit(first, last, zip);
 		assertThat(form.error()).hasText(expected);
-		assertThat(form.title()).hasText("Checkout: Your Information");
+		assertThat(form.title()).hasText("Checkout: your information");
 	}
 
 	/**
@@ -76,7 +78,7 @@ public class CheckoutTest extends UiTest {
 		CheckoutInfoPage form = loginAs(TestData.STANDARD_USER).addToCart(TestData.BACKPACK).openCart().checkout();
 
 		CartPage cart = form.cancel();
-		assertThat(cart.title()).hasText("Your Cart");
+		assertThat(cart.title()).hasText("Your cart");
 		assertThat(cart.items()).hasText(new String[] { TestData.BACKPACK });
 		assertThat(cart.cartBadge()).hasText("1");
 	}

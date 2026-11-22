@@ -8,14 +8,14 @@ import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 
 /**
- * A product's detail page ({@code /inventory-item.html?id=...}).
+ * A product's detail page ({@code /product?id=...}).
  */
 public class ProductPage extends ShopPage {
 
 	// Name, price and the button back to the list
-	@TestId("inventory-item-name")
+	@TestId("product-detail-name")
 	private Locator name;
-	@TestId("inventory-item-price")
+	@TestId("product-detail-price")
 	private Locator price;
 	@TestId("back-to-products")
 	private Locator back;

@@ -15,15 +15,15 @@ import com.microsoft.playwright.Page;
 public class CheckoutOverviewPage extends ShopPage {
 
 	// Ordered products, their prices, and the three totals
-	@TestId("inventory-item-name")
+	@TestId("overview-item-name")
 	private Locator names;
-	@TestId("inventory-item-price")
+	@TestId("overview-item-price")
 	private Locator prices;
-	@TestId("subtotal-label")
+	@TestId("subtotal")
 	private Locator itemTotal;
-	@TestId("tax-label")
+	@TestId("tax")
 	private Locator tax;
-	@TestId("total-label")
+	@TestId("total")
 	private Locator total;
 	@TestId("finish")
 	private Locator finish;

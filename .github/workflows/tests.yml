@@ -42,6 +42,14 @@ jobs:
           fi
           mvn -B -q compile exec:java -Dexec.args="install --with-deps ${{ matrix.browser }}"
 
+      # The web shop under test: Pattern Shop (my own demo shop), fresh for this job only,
+      # at http://localhost:8080 (baseUrl in config.properties). The API tests use Restful Booker.
+      - name: Start Pattern Shop
+        run: |
+          docker run -d --name shop -p 8080:8080 ghcr.io/niranjankagri/pattern-shop-demo-app:latest
+          for i in $(seq 1 30); do [ "$(curl -s localhost:8080/health)" = "ok" ] && exit 0; sleep 1; done
+          docker logs shop; exit 1
+
       - name: Run the tests
         run: mvn -B test -Dbrowser=${{ matrix.browser }} -Dheadless=true
 

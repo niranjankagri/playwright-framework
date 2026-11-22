@@ -2,6 +2,7 @@ package com.automation.playwright.tests.interview;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
 import java.util.Arrays;
@@ -20,9 +21,10 @@ import com.automation.playwright.utils.Steps;
 import com.microsoft.playwright.BrowserContext;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Response;
+import com.microsoft.playwright.options.Cookie;
 
 /**
- * Common Playwright interview tasks, solved on the Sauce Demo shop: locator
+ * Common Playwright interview tasks, solved on the Pattern Shop: locator
  * strategies, keyboard input, tabs, saved logins, JavaScript, screenshots,
  * dialogs, waiting for a response and checking images. Each test is a
  * short, complete answer that can be shown and explained; the Playwright
@@ -42,9 +44,9 @@ public class PlaywrightScenariosTest extends UiTest {
 
 		for (Map.Entry<String, Locator> strategy : login.usernameByEveryStrategy().entrySet()) {
 			Steps.log("Find the user name field with " + strategy.getKey());
-			// Exactly one match, and it is the same element (its data-test value)
+			// Exactly one match, and it is the same element (its data-testid value)
 			assertThat(strategy.getValue()).hasCount(1);
-			assertThat(strategy.getValue()).hasAttribute("data-test", "username");
+			assertThat(strategy.getValue()).hasAttribute("data-testid", "username");
 		}
 		assertThat(login.loginButtonByRole()).isEnabled();
 	}
@@ -56,7 +58,7 @@ public class PlaywrightScenariosTest extends UiTest {
 	public void tc118_loginWorksWithTheKeyboardOnly() {
 		InventoryPage inventory = openLoginPage().loginWithKeyboard(TestData.STANDARD_USER);
 
-		assertThat(inventory.items()).hasCount(6);
+		assertThat(inventory.items()).hasCount(TestData.PRODUCT_COUNT);
 	}
 
 	/**
@@ -69,7 +71,7 @@ public class PlaywrightScenariosTest extends UiTest {
 
 		InventoryPage secondTab = inventory.openInNewTab();
 		try {
-			assertThat(secondTab.items()).hasCount(6);
+			assertThat(secondTab.items()).hasCount(TestData.PRODUCT_COUNT);
 			assertEquals(inventory.openTabs(), 2, "Tabs open in the context");
 		} finally {
 			secondTab.close();
@@ -77,7 +79,7 @@ public class PlaywrightScenariosTest extends UiTest {
 	}
 
 	/**
-	 * Saves the login (cookies and local storage) with storageState() and
+	 * Saves the login (the session cookie) with storageState() and
 	 * starts a new, separate context from it: that context is logged in at
 	 * once. Suites use this to log in once and skip the login form after.
 	 */
@@ -88,24 +90,27 @@ public class PlaywrightScenariosTest extends UiTest {
 		Steps.log("Start a new context from the saved login and open the product list");
 		try (BrowserContext context = BrowserManager.newContextWith(savedLogin)) {
 			InventoryPage inventory = new InventoryPage(context.newPage()).open();
-			assertThat(inventory.items()).hasCount(6);
+			assertThat(inventory.items()).hasCount(TestData.PRODUCT_COUNT);
 		}
 	}
 
 	/**
-	 * Runs JavaScript in the page with evaluate(): reads the document state
-	 * and the cart the shop keeps in local storage.
+	 * Runs JavaScript in the page with evaluate(): reads the document state and
+	 * the cookies the page can see. The shop's session cookie is HttpOnly: the
+	 * browser context has it, but JavaScript in the page cannot read it (so a
+	 * script injected into the page could not steal the session).
 	 */
-	@Test(description = "[TC-121] JavaScript reads the page and its local storage")
-	public void tc121_javascriptReadsThePageAndItsStorage() {
+	@Test(description = "[TC-121] JavaScript reads the page but not the HttpOnly session cookie")
+	public void tc121_javascriptReadsThePageButNotTheSessionCookie() {
 		InventoryPage inventory = loginAs(TestData.STANDARD_USER).addToCart(TestData.BACKPACK);
 
 		String readyState = inventory.readyState();
-		String cart = inventory.cartInStorage();
-		Steps.log("document.readyState = " + readyState + ", cart-contents = " + cart);
+		String visibleCookies = inventory.cookiesVisibleToJavaScript();
+		Cookie session = inventory.sessionCookie().orElseThrow(() -> new AssertionError("No SESSION cookie after login"));
+		Steps.log("document.readyState = " + readyState + ", document.cookie = \"" + visibleCookies + "\", SESSION httpOnly = " + session.httpOnly);
 		assertEquals(readyState, "complete", "document.readyState");
-		// The shop stores the product ids in the cart; the backpack is id 4
-		assertEquals(cart, "[4]", "Cart in local storage");
+		assertTrue(session.httpOnly, "The session cookie should be HttpOnly");
+		assertFalse(visibleCookies.contains("SESSION"), "document.cookie should not show the session: " + visibleCookies);
 	}
 
 	/**
@@ -155,7 +160,7 @@ public class PlaywrightScenariosTest extends UiTest {
 	public void tc123_productImagesAreNotBrokenExceptForTheProblemUser() {
 		InventoryPage inventory = loginAs(TestData.STANDARD_USER);
 		Map<String, Integer> statuses = inventory.imageStatuses();
-		assertEquals(statuses.size(), 6, "Different images for 6 products: " + statuses.keySet());
+		assertEquals(statuses.size(), TestData.PRODUCT_COUNT, "Different images for " + TestData.PRODUCT_COUNT + " products: " + statuses.keySet());
 		statuses.forEach((src, status) -> assertEquals(status.intValue(), 200, "Status of " + src));
 
 		List<String> problemImages = inventory.logout().loginAs(TestData.PROBLEM_USER).imageSources();

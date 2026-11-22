@@ -472,7 +472,7 @@ public class HtmlReportListener implements IReporter {
 			</head>
 			<body>
 			<header><div class="wrap top">
-			<div><div class="eyebrow">Playwright · TestNG · Sauce Demo + Restful Booker</div><h1>{{title}}</h1>
+			<div><div class="eyebrow">Playwright · TestNG · Pattern Shop + Restful Booker</div><h1>{{title}}</h1>
 			<div class="meta">Started {{started}} · took {{duration}}</div></div>
 			<div class="verdict {{verdict}}">{{verdictText}}</div>
 			</div></header>

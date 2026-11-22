@@ -15,23 +15,25 @@ import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
 
 /**
- * The product list ({@code /inventory.html}), shown after login.
+ * The product list ({@code /products}), shown after login.
  */
 public class InventoryPage extends ShopPage {
 
 	// Path of the page, relative to the base URL
-	static final String PATH = "/inventory.html";
+	static final String PATH = "/products";
 
 	// One card per product, and the name and price inside the cards
-	@TestId("inventory-item")
+	@TestId("product-card")
 	private Locator items;
-	@TestId("inventory-item-name")
+	@TestId("product-name")
 	private Locator names;
-	@TestId("inventory-item-price")
+	@TestId("product-price")
 	private Locator prices;
-	// Sort drop-down: a real <select>, so selectOption() works
-	@TestId("product-sort-container")
+	// Sort drop-down: a real <select>, so selectOption() works; the Sort button applies it (no JavaScript)
+	@TestId("sort")
 	private Locator sort;
+	@TestId("sort-apply")
+	private Locator sortButton;
 	// The product pictures, one per card
 	private final Locator images = items.locator("img");
 
@@ -126,36 +128,35 @@ public class InventoryPage extends ShopPage {
 	}
 
 	/**
-	 * @param option         the option value: "az", "za", "lohi" or "hilo".
+	 * Picks a sort option and applies it; the shop reloads the list in that order.
+	 *
+	 * @param option         the option value: "name-asc", "name-desc", "price-asc" or "price-desc".
 	 * @return InventoryPage this page, re-sorted.
 	 */
 	public InventoryPage sortBy(String option) {
 		Steps.log("Sort products by \"" + option + "\"");
 		sort.selectOption(option);
+		sortButton.click();
+		// The click starts a navigation; waiting for its URL means the list read next is the new one
+		page.waitForURL("**/products?sort=" + option);
+		waitUntilLoaded();
 		return this;
 	}
 
 	/**
-	 * Adds a product to the cart with the button on its card.
+	 * Adds a product to the cart with the button on its card. The shop answers
+	 * with the same list again (a form post and a redirect), so this waits for
+	 * that page before the next step reads it.
 	 *
-	 * @param name           the product name, e.g. "Sauce Labs Backpack".
+	 * @param name           the product name, e.g. "Backpack".
 	 * @return InventoryPage this page.
 	 */
 	public InventoryPage addToCart(String name) {
 		Steps.log("Add \"" + name + "\" to the cart");
+		String before = cartBadge().innerText();
 		card(name).getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Add to cart")).click();
-		return this;
-	}
-
-	/**
-	 * Removes a product from the cart with the button on its card.
-	 *
-	 * @param name           the product name.
-	 * @return InventoryPage this page.
-	 */
-	public InventoryPage removeFromCart(String name) {
-		Steps.log("Remove \"" + name + "\" from the cart");
-		card(name).getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Remove")).click();
+		assertThat(cartBadge()).hasText(String.valueOf(Integer.parseInt(before.trim()) + 1));
+		waitUntilLoaded();
 		return this;
 	}
 
@@ -164,19 +165,19 @@ public class InventoryPage extends ShopPage {
 	 * @return double  the price shown on its card, e.g. 29.99.
 	 */
 	public double priceOf(String name) {
-		return money(card(name).getByTestId("inventory-item-price").innerText());
+		return money(card(name).getByTestId("product-price").innerText());
 	}
 
 	/**
-	 * Opens a product's detail page with the title link on its card, and
-	 * waits until the detail page is drawn (the URL changes before the page does).
+	 * Opens a product's detail page with the name link on its card, and
+	 * waits until the detail page is shown.
 	 *
 	 * @param name         the product name.
 	 * @return ProductPage the detail page.
 	 */
 	public ProductPage openProduct(String name) {
 		Steps.log("Open the details of \"" + name + "\"");
-		card(name).locator("[data-test$='title-link']").click();
+		card(name).getByTestId("product-name").click();
 		ProductPage product = new ProductPage(page);
 		product.waitUntilLoaded();
 		return product;
